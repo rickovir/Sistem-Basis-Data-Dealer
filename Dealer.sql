@@ -12,7 +12,7 @@ Using SQL(Structured Query Languange) for Structured code sintax
 * Data Definition Language (DDL) start here 
 */
 
--- create table for sales
+-- membuat tabel untuk sales
 create table sales (
     kode_sales varchar2(10) not null,
     nama_sales varchar2(50) not null,
@@ -21,7 +21,7 @@ create table sales (
     primary key(kode_sales)
 );
 
--- create table for customer
+-- membuat table untuk customer
 create table customer(
     NIK char(20) not null,
     nama_customer varchar2(30) not null,
@@ -30,14 +30,14 @@ create table customer(
     primary key(NIK)
 );
 
--- create table for tipe
+-- membuat table untuk tipe mobil
 create table tipe(
     kode_tipe varchar2(10) not null,
     nama_tipe varchar2(20) not null,
     primary key(kode_tipe)
 );
 
--- create table for merek
+-- membuat table untuk merek mobil
 create table merek(
     kode_merek varchar2(10) not null,
     nama_merek varchar2(20) not null,
@@ -45,7 +45,7 @@ create table merek(
     primary key(kode_merek)
 );
 
--- create table for mobil
+-- membuat table untuk mobil
 create table mobil(
     kode_mobil char(10) not null,
     nama_mobil varchar2(20) not null,
@@ -60,7 +60,7 @@ create table mobil(
     foreign key(kode_merek) references merek(kode_merek)
 );
 
--- create table for transaksi
+-- membuat table untuk transaksi
 create table transaksi(
     kode_transaksi char(20) not null,
     NIK char(20) not null,
@@ -70,7 +70,7 @@ create table transaksi(
     primary key(kode_transaksi)
 );
 
--- create table for paket kredit
+-- membuat table untuk paket kredit
 create table paket_kredit(
     kode_paket char(10) not null,
     nama_paket varchar2(50) not null,
@@ -80,7 +80,7 @@ create table paket_kredit(
     primary key(kode_paket)
 );
 
--- create table for cash
+-- membuat table untuk cash
 create table cash(
     kode_cash char(20) not null,
     harga_cash number(25) not null,
@@ -89,7 +89,7 @@ create table cash(
     foreign key(kode_transaksi) references transaksi(kode_transaksi)
 );
 
--- create table for kredit
+-- membuat table untuk kredit
 create table kredit(
     kode_kredit char(20) not null,
     kode_transaksi char(20) not null,
@@ -106,7 +106,7 @@ create table kredit(
     foreign key(kode_transaksi) references transaksi(kode_transaksi)
 );
 
--- create table for cicilan
+-- membuat table untuk cicilan
 create table cicilan(
     kode_cicilan char(20) not null,
     kode_transaksi char(20) not null,
@@ -166,22 +166,22 @@ alter table cust_harian_peluang rename to cust_hari_peluang;
 
 */
 
--- alter table cicilan to add column denda in cicilan
+-- alter table cicilan untuk menambah column denda pada table cicilan
 alter table cicilan add denda number(10) not null;
 
--- alter table cicilan to add column jatuh_tempo in cicilan
+-- alter table cicilan untuk menambah column jatuh_tempo pada table cicilan
 alter table cicilan add jatuh_tempo date not null;
 
--- alter table cicilan to add column tanggal_bayar in cicilan
+-- alter table cicilan untuk menambah column tanggal_bayar pada table cicilan
 alter table cicilan add tanggal_bayar date not null;
 
--- alter table sales to modify column kode_sales(5)
+-- alter table sales untuk mengubah kolom kode_sales(5)
 alter table sales modify kode_sales char(5);
 
--- alter table kredit to add column tanggal_kredit
+-- alter table kredit untuk menambah kolom tanggal_kredit
 alter table kredit add tanggal_kredit date not null;
 
--- alter table kredit to add column tanggal_kredit
+-- alter table kredit untuk menambah kolom tanggal_cash
 alter table cash add tanggal_cash date not null;
 
 -- alter table transaksi to add column kode_sales
@@ -220,17 +220,22 @@ alter table sales_mobil_bonus modify kode_sales char(5);
 */
 
 
-/* Creating sequences */
+/*
+* Sequence 
+*/
 
 /*
 mengecek sequence
 SELECT s_sales.nextVal FROM DUAL;
 */
 
+-- create sequence s_sales for sales start with 1100
 create sequence s_sales start with 1100;
 
+-- create sequence s_transaksi for transaksi start with 100000
 create sequence s_transaksi start with 100000;
 
+-- create sequence for transaksi start with 100000
 create sequence s_cash start with 10000;
 
 create sequence s_kredit start with 10000;
@@ -2514,4 +2519,3 @@ create or replace view v_trans_pertanggal as select * from transaksi where tgl_t
 
 create or replace view v_trans_perbulan as select * from transaksi where tgl_transaksi = to_date('12/05/2015','dd/mm/yyyy');
  
-
