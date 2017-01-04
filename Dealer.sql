@@ -9,7 +9,7 @@ Using SQL(Structured Query Languange) for Structured code sintax
 
 
 /*
-* Data Definition Language (DDL) start here 
+*  Data Definition Language (DDL) start here 
 */
 
 -- membuat tabel untuk sales
@@ -184,28 +184,28 @@ alter table kredit add tanggal_kredit date not null;
 -- alter table kredit untuk menambah kolom tanggal_cash
 alter table cash add tanggal_cash date not null;
 
--- alter table transaksi to add column kode_sales
+-- alter table transaksi untuk menambah kolom kode_sales
 alter table transaksi add kode_sales char(5) not null;
 
--- alter table transaksi to add foreign key kode_sales
+-- alter table transaksi untuk menambah foreign key kode_sales
 alter table transaksi add foreign key(kode_sales) references sales(kode_sales);
 
--- alter table cash to add column kode_mobil
+-- alter table cash untuk menambah kolom kode_mobil
 alter table cash add kode_mobil char(10) not null;
 
--- alter table cash to add foreign key kode_mobil
+-- alter table cash untuk menambah foreign key kode_mobil
 alter table cash add foreign key(kode_mobil) references mobil(kode_mobil);
 
--- alter table transaksi to add column kode_mobil
+-- alter table transaksi untuk menambah kolom total_harga
 alter table transaksi add total_harga number(25) not null;
 
--- alter table cash to drop column harga_cash
+-- alter table cash untuk menghapus kolom harga_cash
 alter table cash drop column harga_cash;
 
--- alter table paket_kredit to modify dp to decimal number
+-- alter table paket_kredit untuk mengubah kolom dp ke decimal number
 alter table paket_kredit modify dp number(7,3);
 
--- alter table paket_kredit to modify biaya_angsuran to decimal number
+-- alter table paket_kredit untuk mengubah kolom biaya_angsuran ke decimal number
 alter table paket_kredit modify biaya_angsuran number(7,3);
 
 /*
@@ -216,12 +216,12 @@ alter table sales_mobil_bonus modify kode_sales char(5);
 
 
 /*
-* This is end of Data Definition Language (DDL) 
+*  This is end of Data Definition Language (DDL) 
 */
 
 
 /*
-* Sequence 
+*  Sequence start here 
 */
 
 /*
@@ -229,37 +229,51 @@ mengecek sequence
 SELECT s_sales.nextVal FROM DUAL;
 */
 
--- create sequence s_sales for sales start with 1100
+-- membuat sequence s_sales untuk sales
 create sequence s_sales start with 1100;
 
--- create sequence s_transaksi for transaksi start with 100000
+-- membuat sequence s_transaksi untuk transaksi
 create sequence s_transaksi start with 100000;
 
--- create sequence for transaksi start with 100000
+-- membuat sequence s_cash untuk tabel cash
 create sequence s_cash start with 10000;
 
+-- membuat sequence s_kredit untuk tabel kredit
 create sequence s_kredit start with 10000;
 
+-- membuat sequence s_cicilan untuk tabel cicilan
 create sequence s_cicilan start with 10000;
 
+-- membuat sequence s_mobil untuk tabel mobil
 create sequence s_mobil start with 10000;
 
+-- membuat sequence s_tipe untuk tabel tipe
 create sequence s_tipe start with 10000;
 
+-- membuat sequence s_merek untuk tabel merek
 create sequence s_merek start with 10000;
 
+-- membuat sequence s_paket untuk tabel paket kredit
 create sequence s_paket start with 10000;
 
-/* end of sequence */
+/*
+*  End of Sequence 
+*/
 
-/* Creating procedure */
+/* 
+*  Creating procedure start here 
+*/
 
-
+/* 
+*  membuat prosedur count_total_transaksi untuk menambahkan harga ke total_harga pada table transaksi
+*  passing parameter kode_transaksi dan harga yang akan ditambahkan
+*/
 create or replace procedure count_total_transaksi(c_kode_transaksi char, c_harga number)
 is
-    total_harga number;
-    total number;
+    total_harga number; -- deklarasi variable total_harga tipe data number
+    total number; -- deklarasi variable total tipe data number
 begin
+    -- mengambil total_harga dari transaksi dan memasukkannya ke variabel total_harga
     select 
         transaksi.total_harga into total_harga
     from
@@ -267,8 +281,9 @@ begin
     where
         transaksi.kode_transaksi = c_kode_transaksi;
         
-    total := total_harga + c_harga;
+    total := total_harga + c_harga; -- menambahkan total_harga dan harga ke variabel total
     
+    -- update total harga pada transaksi
     update
         transaksi
     set
@@ -277,7 +292,7 @@ begin
         transaksi.kode_transaksi = c_kode_transaksi;
 end;    
 
-
+-- belum jelas
 create or replace procedure in_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
 is
     NIK char(20);
@@ -526,28 +541,36 @@ begin
 end;
 
 
-drop trigger dl_act_cash;
-drop trigger dl_act_kredit;
-
-
+/* 
+*  membuat prosedur hitung_transaksi untuk menghitung dan menjumlahkan seluruh harga 
+*  yang menggunakan kode_transaksi tertentu
+*/
 create or replace procedure hitung_transaksi(kode_transaksi char)
 is
-    total number;
+    total number; -- deklarasi variabel total
 begin
+    -- menjumlahkan harga dari kredit, cash, dan cicilan ke variabel total
     total := total_kredit_pertransaksi(kode_transaksi) + total_cash_pertransaksi(kode_transaksi) + total_cicilan_pertransaksi(kode_transaksi);
+    -- menambahkan total ke dalam total_harga ditable transaksi
     count_total_transaksi(kode_transaksi, total);
 end;
 
 
+/* 
+*  membuat fungsi find_angsuran untuk mencari besar harga angsuran dari persen angsuran dikali harga mobil
+*  menggunakan dari kode_kredit tertentu
+*/
 create or replace function find_angsuran(c_kode_kredit char)
-return number
+return number -- mengembalikan kembalian berupa number
 is
+    -- deklarasi variabel yang dibutuhkan
     angsuran number;
     harga_mobil number;
     total number;
-    c_kode_paket char(10);
-    c_kode_mobil char(10);
+    c_kode_paket char(10); -- untuk menampung kode_paket
+    c_kode_mobil char(10); -- untuk menampung kode_mobil
 begin
+    -- mencari kode_paket, kode_mobil dari tabel kredit dan kode_kredit tertentu
     select
         kredit.kode_paket,kredit.kode_mobil into c_kode_paket, c_kode_mobil
     from
@@ -555,13 +578,15 @@ begin
     where
         kredit.kode_kredit = c_kode_kredit;
         
+    -- mencari biaya_angsuran dari paket_kredit berdasarkan kode_paket dari table kredit
     select 
         paket_kredit.biaya_angsuran into angsuran
     from
         paket_kredit 
     where 
         paket_kredit.kode_paket = c_kode_paket;
-        
+    
+    -- mencari harga mobil dari mobil berdasarkan kode_mobil dari table kredit
     select
         mobil.harga_mobil into harga_mobil
     from
@@ -569,11 +594,16 @@ begin
     where 
         mobil.kode_mobil = c_kode_mobil;
     
+    -- mengalikan besar angsuran * harga mobil
     total := angsuran*harga_mobil;
-    return total;
+    return total; -- keluaran yang dihasilkan
 end;
 
 
+/* 
+*  membuat fungsi find_dp untuk mencari besar harga dp dari persen dp dikali harga mobil
+*  menggunakan dari kode_kredit tertentu
+*/
 create or replace function find_dp(c_kode_paket char, c_kode_mobil char)
 return number
 is
