@@ -1,4 +1,18 @@
-/* DDL */
+/* 
+This is project of Dealer Database System.
+Created by Ricko Virnanda & Muhammad Fariz Syakur A
+On Esa Unggul University
+Date Created 04 Jan 2017
+Make for Oracle Database environment
+Using SQL(Structured Query Languange) for Structured code sintax 
+*/
+
+
+/*
+* Data Definition Language (DDL) start here 
+*/
+
+-- create table for petugas
 create table tbl_petugas (
     kode_petugas varchar2(10) not null,
     nama_petugas varchar2(50) not null,
