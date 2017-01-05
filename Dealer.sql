@@ -261,7 +261,7 @@ create sequence s_paket start with 10000;
 */
 
 /* 
-*  Creating procedure start here 
+*  Creating store procedure start here 
 */
 
 /* 
@@ -292,6 +292,7 @@ begin
         transaksi.kode_transaksi = c_kode_transaksi;
 end;    
 
+/*
 -- belum jelas
 create or replace procedure in_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
 is
@@ -351,6 +352,7 @@ begin
 end;
 
 
+-- belum jelas
 create or replace procedure dl_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
 is
     NIK char(20);
@@ -388,6 +390,7 @@ end;
 
 
 
+-- belum jelas
 create or replace procedure in_bonus_sales(c_kode_transaksi char, c_kode_mobil char)
 is
     kode_sales char(5);
@@ -433,6 +436,7 @@ begin
 end;
 
 
+-- belum jelas
 create or replace procedure up_bonus_sales(c_kode_transaksi char, c_kode_mobil char, old_kode_mobil char)
 is
     kode_sales char(5);
@@ -494,6 +498,7 @@ begin
 end;
 
 
+-- belum jelas
 create or replace procedure dl_bonus_sales(c_kode_transaksi char, c_kode_mobil char)
 is
     kode_sales char(5);
@@ -540,7 +545,7 @@ begin
         merek_MOBIL_BONUS.KODE_MEREK = kode_merek
     ;
 end;
-
+*/
 
 /* 
 *  membuat prosedur hitung_transaksi untuk menghitung dan menjumlahkan seluruh harga 
@@ -605,13 +610,24 @@ end;
 *  membuat fungsi find_dp untuk mencari besar harga dp dari persen dp dikali harga mobil
 *  menggunakan dari kode_kredit tertentu
 */
-create or replace function find_dp(c_kode_paket char, c_kode_mobil char)
-return number
+create or replace function find_dp(c_kode_kredit char)
+return number  -- mengembalikan kembalian berupa number
 is
     dp number;
     harga_mobil number;
     total number;
+    c_kode_paket char(10); -- untuk menampung kode_paket
+    c_kode_mobil char(10); -- untuk menampung kode_mobil
 begin
+    -- mencari kode_paket, kode_mobil dari tabel kredit dan kode_kredit tertentu
+    select
+        kredit.kode_paket,kredit.kode_mobil into c_kode_paket, c_kode_mobil
+    from
+    kredit
+    where
+        kredit.kode_kredit = c_kode_kredit;
+        
+    -- mencari dp dari paket_kredit berdasarkan kode_paket dari table kredit
     select 
         paket_kredit.dp into dp
     from
@@ -619,23 +635,30 @@ begin
     where 
         paket_kredit.kode_paket = c_kode_paket;
         
+    -- mencari harga mobil dari mobil berdasarkan kode_mobil dari table kredit
     select
         mobil.harga_mobil into harga_mobil
     from
         mobil
     where 
         mobil.kode_mobil = c_kode_mobil;
+    -- mengalikan besar angsuran * harga mobil
     total := dp*harga_mobil;
-    return total;
+    return total; -- keluaran yang dihasilkan
 end;
 
 
+/* 
+*  membuat fungsi find_h_mobil untuk mencari harga mobil
+*  menggunakan dari kode_mobil tertentu
+*/
 create or replace function find_h_mobil(c_kode_mobil char)
-return number
+return number -- keluaran berupa number
 is
     harga_mobil number;
     total number;
 begin
+    -- mencari harga_mobil berdasarkan kode_mobil
     select 
         mobil.harga_mobil into harga_mobil 
     from
@@ -647,10 +670,17 @@ begin
     return total;
 end;
 
+
+/* 
+*  membuat fungsi total_cash_pertransaksi untuk menghitung seluruh harga cash pembelian mobil
+*  pertransaksi yang telah dilakukan
+*  menggunakan dari kode_transaksi tertentu
+*/
 create or replace function total_cash_pertransaksi(kode_transaksi char)
-return number
+return number -- keluaran berupa number
 is
-    total number;
+    total number; -- deklarasi variabel total
+    -- membuat cursor c1 untuk menampung data kode mobil dari table cash pada transaksi tertentu
     cursor c1 is
         select
             cash.kode_mobil
@@ -659,39 +689,56 @@ is
         where
             cash.kode_transaksi = kode_transaksi;
 begin
+    -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
+    -- looping untuk mengurai cursor c1 dan cash_fetch mengambil data dari c1 kemudian diuraikan
     for cash_fetch in c1
     loop
-        total := total + find_h_mobil(cash_fetch.kode_mobil);
+        total := total + find_h_mobil(cash_fetch.kode_mobil); -- menghitung total harga cash mobil
     end loop;
-    return total;
+    return total; -- mengembalikan keluaran dari total
 end;
 
 
+/* 
+*  membuat fungsi total_kredit_pertransaksi untuk menghitung seluruh harga kredit pembelian mobil
+*  pertransaksi yang telah dilakukan
+*  menggunakan dari kode_transaksi tertentu
+*/
 create or replace function total_kredit_pertransaksi(kode_transaksi char)
-return number
+return number -- keluaran berupa number
 is
-    total number;
+    total number; -- deklarasi variabel total
+    -- membuat cursor c1 untuk menampung data kode_kredit dari table kredit pada transaksi tertentu
     cursor c1 is
         select
-            kredit.kode_mobil, kredit.kode_paket
+            kredit.kode_kredit
         from
             kredit
         where
             kredit.kode_transaksi = kode_transaksi;
 begin
+    -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
+    -- looping untuk mengurai cursor c1 dan kredit_fetch mengambil data dari c1 kemudian diuraikan
     for kredit_fetch in c1
     loop
-        total := total + find_dp(kredit_fetch.kode_paket, kredit_fetch.kode_mobil);
+        total := total + find_dp(kredit_fetch.kode_kredit);-- menghitung total harga dp mobil
     end loop;
-    return total;
+    return total; -- mengembalikan keluaran dari total
 end;
 
+
+/* 
+*  membuat fungsi total_cicilan_pertransaksi untuk menghitung seluruh harga cicilan mobil
+*  pertransaksi yang telah dilakukan
+*  menggunakan dari kode_transaksi tertentu
+*/
 create or replace function total_cicilan_pertransaksi(kode_transaksi char)
-return number
+return number -- keluaran berupa number
 is
-    total number;
+    total number; -- deklarasi variabel total
+    -- membuat cursor c1 untuk menampung data kode_kredit dari table cicilan pada transaksi tertentu
     cursor c1 is
         select
             cicilan.kode_kredit
@@ -700,52 +747,72 @@ is
         where
             cicilan.kode_transaksi = kode_transaksi;
 begin
+    -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
+    -- looping untuk mengurai cursor c1 dan cicilan_fetch mengambil data dari c1 kemudian diuraikan
     for cicilan_fetch in c1
     loop
-        total := total + find_angsuran(cicilan_fetch.kode_kredit);
+        total := total + find_angsuran(cicilan_fetch.kode_kredit);-- menghitung total harga angsuran mobil
     end loop;
-    return total;
+    return total; -- mengembalikan keluaran dari total
 end;
-/* end of procedure */
+
+/* 
+*  End of store procedure
+*/
 
 
-/* Creating triggers */
+/* 
+*  Creating trigger start here 
+*/
 
+/*
+*  membuat trigger uk_sales before insert untuk unik kode_sales
+*/
 create or replace trigger uk_sales
     before insert on sales
     for each row
 begin
+    -- menambahkan karakter 'P' diawal kode_sales pada setiap kode_sales yang baru
     :new.kode_sales := 'P'||trim(to_char(:new.kode_sales));
 end;
 
 
+/*
+*  membuat trigger uk_transaksi before insert untuk unik kode_transaksi dan operasi operasi otomatis saat di insert
+*/
 create or replace trigger uk_transaksi
     before insert on transaksi
     for each row
 begin
+    -- menambahkan karakter 'TRX' diawal kode_transaksi pada setiap kode_transaksi yang baru
     :new.kode_transaksi := 'TRX'||trim(to_char (:new.kode_transaksi));
-    :new.total_harga := 0;
+    :new.total_harga := 0; -- total_harga karena tidak diisi pada operasi DML maka diset 0 untuk operasi dengan prosedur
 end;
 
 
+/*
+*  membuat trigger uk_cash before insert untuk unik kode_cash dan operasi operasi otomatis saat di insert
+*/
 create or replace trigger uk_cash
     before insert on cash
     for each row
     declare
-    tgl date;
+    tgl date; -- deklarasi variabel tgl untuk menampung tanggal_transaksi
 begin
+    -- menambahkan karakter 'BCS' diawal kode_cash pada setiap kode_cash yang baru
     :new.kode_cash := 'BCS'||trim(to_char (:new.kode_cash));
+    -- mencari tanggal transaksi dari data kode_transaksi yang baru di input table cash dan dimasukkan ke variabel tgl
     select
         transaksi.TGL_TRANSAKSI into tgl
     from
         transaksi
     where
         transaksi.kode_transaksi = :new.kode_transaksi;
-    
+    -- mengeset tanggal cash dari variabel tgl dari tanggal transaksi
     :new.tanggal_cash := tgl;
 end;
-
+-- perubahan baru sampai sini silahkan commit ke database
 
 create or replace trigger uk_kredit
     before insert on kredit
