@@ -744,7 +744,7 @@ is
     -- membuat cursor c1 untuk menampung data kode_kredit dari table cicilan pada transaksi tertentu
     cursor c1 is
         select
-            cicilan.kode_kredit
+            cicilan.kode_kredit, cicilan.harga_cicilan
         from
             cicilan
         where
