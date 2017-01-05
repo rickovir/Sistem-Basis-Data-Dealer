@@ -330,6 +330,7 @@ begin
 end;
 
 
+-- belum jelas
 create or replace procedure up_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
 is
     NIK char(20);
