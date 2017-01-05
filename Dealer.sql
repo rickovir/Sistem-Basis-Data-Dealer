@@ -208,6 +208,9 @@ alter table paket_kredit modify dp number(7,3);
 -- alter table paket_kredit untuk mengubah kolom biaya_angsuran ke decimal number
 alter table paket_kredit modify biaya_angsuran number(7,3);
 
+-- alter table paket_kredit untuk mengubah kolom biaya_angsuran ke decimal number
+--alter table cicilan drop column harga_cicilan;
+
 /*
 alter table sales_merek_bonus modify kode_sales char(5);
 
@@ -752,10 +755,13 @@ begin
     -- looping untuk mengurai cursor c1 dan cicilan_fetch mengambil data dari c1 kemudian diuraikan
     for cicilan_fetch in c1
     loop
-        total := total + find_angsuran(cicilan_fetch.kode_kredit);-- menghitung total harga angsuran mobil
+        --total := total + find_angsuran(cicilan_fetch.kode_kredit);-- menghitung total harga angsuran mobil
+        
+        total := total + cicilan_fetch.harga_cicilan;-- menghitung total harga cicilan mobil
     end loop;
     return total; -- mengembalikan keluaran dari total
 end;
+
 
 /* 
 *  End of store procedure
@@ -779,7 +785,7 @@ end;
 
 
 /*
-*  membuat trigger uk_transaksi before insert untuk unik kode_transaksi dan operasi operasi otomatis saat di insert
+*  membuat trigger uk_transaksi before insert untuk unik kode_transaksi dan set total_harga mulai dari 0
 */
 create or replace trigger uk_transaksi
     before insert on transaksi
@@ -792,7 +798,7 @@ end;
 
 
 /*
-*  membuat trigger uk_cash before insert untuk unik kode_cash dan operasi operasi otomatis saat di insert
+*  membuat trigger uk_cash before insert untuk unik kode_cash dan tanggal_cash dari tanggal_transaksi
 */
 create or replace trigger uk_cash
     before insert on cash
@@ -809,11 +815,16 @@ begin
         transaksi
     where
         transaksi.kode_transaksi = :new.kode_transaksi;
+        
     -- mengeset tanggal cash dari variabel tgl dari tanggal transaksi
     :new.tanggal_cash := tgl;
 end;
--- perubahan baru sampai sini silahkan commit ke database
 
+
+/*
+*  membuat trigger uk_kredit before insert untuk unik kode_kredit, mengeset tanggal_kredit, mengeset jumlah angsuran
+*  set status kredit dan set gambar fotocopy KTP, KK dan slip gaji
+*/
 create or replace trigger uk_kredit
     before insert on kredit
     for each row
@@ -821,17 +832,23 @@ create or replace trigger uk_kredit
     sisa_kredit number;
     tgl date;
 begin
+    -- menambahkan karakter 'BKR' diawal kode_kredit pada setiap kode_kredit yang baru
     :new.kode_kredit := 'BKR'||trim(to_char (:new.kode_kredit));
     
+    -- mencari jumlah angsuran dari paket_kredit yang di pilih table kredit dan dimasukkan ke variabel sisa_kredit
     select
         paket_kredit.jumlah_angsuran into sisa_kredit
     from
         paket_kredit
     where
         paket_kredit.kode_paket = :new.kode_paket;
-        
-    :new.sisa_kredit := sisa_kredit;
     
+
+    -- mengeset sisa kredit awal dari jumlah angsuran paket kredit yang dari value variabel sisa_kredit
+    :new.sisa_kredit := sisa_kredit;
+
+    
+    -- mencari tanggal transaksi dari data kode_transaksi yang di input table kredit dan dimasukkan ke variabel tgl
     select
         transaksi.TGL_TRANSAKSI into tgl
     from
@@ -839,19 +856,29 @@ begin
     where
         transaksi.kode_transaksi = :new.kode_transaksi;
     
+    -- mengeset tanggal_kredit dari variabel tgl
     :new.tanggal_kredit := tgl;
+
+    -- mengeset status_kredit awal belum lunas
     :new.status_kredit := 'belum lunas';
         
+    -- mengeset semua value pada fotocopy dengan kode_kredit dan jenis fotocopynya
     :new.fotocopy_kk := trim(to_char (:new.kode_kredit))||'_fc_kk.jpg';
     :new.fotocopy_ktp := trim(to_char (:new.kode_kredit))||'_fc_ktp.jpg';
     :new.fotocopy_slip_gaji := trim(to_char (:new.kode_kredit))||'_fc_slg.jpg';
 end;
 
 
+/*
+*  membuat trigger uk_cicilan before insert untuk unik kode_cicilan, mengeset tanggal_bayar,
+*  mengurangi sisa_kredit pada table kredit, mengecek tanggal jatuh tempo untuk denda, menentukan harga_cicilan
+*  dan menentukan cicilan ke berapa 
+*/
 create or replace trigger uk_cicilan
     before insert on cicilan
     for each row
     declare
+    -- deklarasi variabel yang dibutuhkan
     jumlah_angsuran number;
     sisa_kredit number;
     cicilan_ke number;
@@ -860,35 +887,43 @@ create or replace trigger uk_cicilan
     tanggal_kredit date;
     selisih_bulan number;
     denda number;
-    
+    -- membuat cursor cukre untuk mengambil kode_paket, sisa_kredit, tanggal_kredit dari tabel kredit 
+    -- sesuai kode_kredit table cicilan
     cursor cukre is
         select
-        kredit.kode_paket, kredit.sisa_kredit, kredit.tanggal_kredit  
+            kredit.kode_paket, kredit.sisa_kredit, kredit.tanggal_kredit  
         from
             kredit
         where
-            kredit.kode_kredit = :new.kode_kredit;
+            kredit.kode_kredit = :new.kode_kredit; -- referensi ke table kredit dari kode_kredit
     
 begin
+    -- menambahkan karakter 'CCL' diawal kode_cicilan pada setiap kode_cicilan yang baru
     :new.kode_cicilan := 'CCL'||trim(to_char (:new.kode_cicilan));
-    :new.harga_cicilan := find_angsuran(:new.kode_kredit);
-    denda :=0;
     
+    --set denda adalah nol 0
+    denda :=0;
+    -- looping untuk mengurai cursor cukre dan kredit_fech mengambil data dari cukre kemudian diuraikan
     for kredit_fetch in cukre
     loop
+        -- mencari jumlah_angsuran pada paket_kredit tertentu
         select
             paket_kredit.jumlah_angsuran into jumlah_angsuran
         from
             paket_kredit
         where
             paket_kredit.kode_paket = kredit_fetch.kode_paket;
-            
+        -- menset sisa kredit
         sisa_kredit := kredit_fetch.sisa_kredit;
+        -- menset tanggal_kredit
         tanggal_kredit := kredit_fetch.tanggal_kredit;
     end loop;
+    -- menentukan cicilan_ke
     cicilan_ke := jumlah_angsuran-sisa_kredit+1;
+    -- menentukan jatuh tempo dari tanggal_kredit dikalikan sebanyak letak cicilan sekarang
     jatuh_tempo := add_months(tanggal_kredit,cicilan_ke);
     
+    -- update table kredit dan mengurangi sisa_kredit dari kode_kredit yang diinput
     update
         kredit
     set
@@ -896,6 +931,7 @@ begin
     where
         kredit.kode_kredit = :new.kode_kredit;
     
+    -- menentukan variabel tanggal_bayar dari tanggal_transaksi table transaksi dari kode_transaksi yang diinput
     select
         transaksi.tgl_transaksi into tanggal_bayar
     from
@@ -903,72 +939,96 @@ begin
     where
         transaksi.kode_transaksi = :new.kode_transaksi;
         
+    -- jika sisa_kredit kurang dari 1 atau nol
     if sisa_kredit <= 1 then
-    update
-        kredit
-    set
-        kredit.status_kredit = 'lunas'
-    where
-        kredit.kode_kredit = :new.kode_kredit;
+        -- update table kredit dan memberikan status lunas pada table kredit dari kode_kredit yang diinput
+        update
+            kredit
+        set
+            kredit.status_kredit = 'lunas'
+        where
+            kredit.kode_kredit = :new.kode_kredit;
     
     end if;
-
+    -- menghitung selisih bulan dari tanggal bayar cicilan dengan jatuh tempo
     selisih_bulan := months_between(tanggal_bayar, jatuh_tempo);
+    -- jika selisih bulan lebih besar dari nol
     if selisih_bulan > 0 then
-        denda := find_angsuran(:new.kode_kredit)*0.05;
+        denda := find_angsuran(:new.kode_kredit)*0.05; -- denda diset dari 5% dari harga angsuran
     end if;
-    :new.denda := denda;
-    :new.tanggal_bayar := tanggal_bayar;
-    :new.jatuh_tempo := jatuh_tempo;
-    :new.cicilan_ke := cicilan_ke;
+    
+    :new.denda := denda; -- set denda
+    :new.harga_cicilan := find_angsuran(:new.kode_kredit) + denda;  -- set harga_cicilan + denda
+    :new.tanggal_bayar := tanggal_bayar; -- set tanggal_bayar
+    :new.jatuh_tempo := jatuh_tempo; -- set jatuh_tempo
+    :new.cicilan_ke := cicilan_ke; -- set cicilan_ke
 end;
 
 
-
+/*
+*  membuat trigger uk_merek before insert untuk unik kode_merek
+*/
 create or replace trigger uk_merek
     before insert on merek
     for each row
 begin
+    -- menambahkan karakter 'MRK' diawal kode_merek pada setiap kode_merek yang baru
     :new.kode_merek := 'MRK'||trim(to_char (:new.kode_merek));
 end;
 
 
+/*
+*  membuat trigger uk_tipe before insert untuk unik kode_tipe
+*/
 create or replace trigger uk_tipe
     before insert on tipe
     for each row
 begin
+    -- menambahkan karakter 'T' diawal kode_tipe pada setiap kode_tipe yang baru
     :new.kode_tipe := 'T'||trim(to_char (:new.kode_tipe));
 end;
 
 
+/*
+*  membuat trigger uk_mobil before insert untuk unik kode_mobil
+*/
 create or replace trigger uk_mobil
     before insert on mobil
     for each row
     declare
-        sub_merek char(3);
+        sub_merek char(3); -- deklarasi variabel penampung sub merek
 begin
+    -- mengambil sub merek dari nama merek pada table merek sesuai kode_merek mobil
     select 
-        upper(substr(merek.nama_merek,0,3)) 
+        -- mengambil nama merek kemudian di ambil 3 kata dari depan kemudian di jadikan huruf besar
+        upper(substr(merek.nama_merek,0,3))
         into 
         sub_merek 
     from
         merek 
     where 
         merek.kode_merek = :new.kode_merek;
-        
+    
+    -- menambahkan karakter menggunakan sub_merek diawal kode_mobil pada setiap kode_mobil yang baru
     :new.kode_mobil := sub_merek||trim(to_char (:new.kode_mobil));
+    
+    -- mengeset value pada gambar dengan kode_mobil dan _pic.jpg
     :new.gambar := trim(to_char (:new.kode_mobil))||'_pic.jpg';
 end;
 
 
+/*
+*  membuat trigger uk_paket before insert untuk unik kode_paket table paket_kredit
+*/
 create or replace trigger uk_paket
     before insert on paket_kredit
     for each row
 begin
+    -- menambahkan karakter 'PKT' diawal kode_paket pada setiap kode_paket yang baru
     :new.kode_paket := 'PKT'||trim(to_char (:new.kode_paket));
 end;
 
-
+/*
 create or replace trigger del_transaksi
     before delete on transaksi
     for each row
@@ -981,7 +1041,7 @@ end;
 
 drop trigger UP_ACT_KREDIT;
 drop trigger UP_ACT_CASH;
-
+*/
 /*
 create or replace trigger otosum_in_cash_transkasi
     after insert on cash
@@ -1061,8 +1121,16 @@ drop trigger otosum_up_cash_transkasi;
 drop trigger otosum_in_cash_transkasi;
 
 */
-/* end of triggers */
 
+/* 
+*  End of Triggers
+*/
+
+
+
+/* 
+*  Creating Database Manipulation Language(DML) start here 
+*/
 
 insert into merek
 values(
@@ -1657,7 +1725,7 @@ s_mobil.nextVal,
 'MRK10000'
 );
 
-
+-- error here  ########################################
 insert into mobil
 (
 kode_mobil,
