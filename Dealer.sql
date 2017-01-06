@@ -2767,6 +2767,7 @@ exec in_bonus_sales('TRX100001','MIT10000');
 exec in_peluang_cust('TRX100001','MIT10000');
 
 
+-- !!!!!!!!!!!!!!!!!!!!!!!1 VIEW BELUM BUAT !!!!!!!!!!!!!!!!!!!!
 create or replace view v_cicilan as select * from cicilan;
 create or replace view v_kredit as select * from kredit;
 create or replace view v_cust_mobil_peluang as select * from cust_mobil_peluang;
