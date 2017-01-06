@@ -9,7 +9,7 @@ Using SQL(Structured Query Languange) for Structured code sintax
 
 
 /*
-*  Data Definition Language (DDL) start here 
+*  =========== Data Definition Language (DDL) start here ===========
 */
 
 -- membuat tabel untuk sales
@@ -219,12 +219,12 @@ alter table sales_mobil_bonus modify kode_sales char(5);
 
 
 /*
-*  This is end of Data Definition Language (DDL) 
+*  =========== This is end of Data Definition Language (DDL) ===========
 */
 
 
 /*
-*  Sequence start here 
+*  =========== Sequence start here ===========
 */
 
 /*
@@ -260,11 +260,11 @@ create sequence s_merek start with 10000;
 create sequence s_paket start with 10000;
 
 /*
-*  End of Sequence 
+*  =========== End of Sequence ===========
 */
 
 /* 
-*  Creating store procedure start here 
+*  =========== Store procedure start here ===========
 */
 
 /* 
@@ -764,13 +764,15 @@ end;
 
 
 /* 
-*  End of store procedure
+*  =========== End of store procedure ===========
 */
 
 
 /* 
-*  Creating trigger start here 
+*  =========== Trigger start here ===========
 */
+
+/* ------ trigger operasi before insert ------ */
 
 /*
 *  membuat trigger uk_sales before insert untuk unik kode_sales
@@ -780,7 +782,7 @@ create or replace trigger uk_sales
     for each row
 begin
     -- menambahkan karakter 'P' diawal kode_sales pada setiap kode_sales yang baru
-    :new.kode_sales := 'P'||trim(to_char(:new.kode_sales));
+    :new.kode_sales := 'S'||trim(to_char(:new.kode_sales));
 end;
 
 
@@ -1028,6 +1030,265 @@ begin
     :new.kode_paket := 'PKT'||trim(to_char (:new.kode_paket));
 end;
 
+/* ------ end of trigger operasi before insert ------ */
+
+
+/* ------ trigger operasi before update ------ */
+
+/*
+*  membuat trigger cek_pr_update_customer before update untuk mencegah update NIK primary
+*/
+create or replace trigger cek_pr_update_customer
+    before update on customer
+    for each row
+begin
+    -- jika NIK baru tidak sama dengan NIK yang lama
+    if(:new.NIK <> :old.NIK) then
+        raise_application_error(-20001,'NIK customer tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_sales before update untuk mencegah update kode_sales primary
+*/
+create or replace trigger cek_pr_update_sales
+    before update on sales
+    for each row
+begin
+    -- jika kode_sales baru tidak sama dengan kode_sales yang lama
+    if(:new.kode_sales <> :old.kode_sales) then
+        raise_application_error(-20001,'kode_sales sales tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_tipe before update untuk mencegah update kode_tipe primary
+*/
+create or replace trigger cek_pr_update_tipe
+    before update on tipe
+    for each row
+begin
+    -- jika kode_tipe baru tidak sama dengan kode_tipe yang lama
+    if(:new.kode_tipe <> :old.kode_tipe) then
+        raise_application_error(-20001,'kode_tipe tipe tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_merek before update untuk mencegah update kode_merek primary
+*/
+create or replace trigger cek_pr_update_merek
+    before update on merek
+    for each row
+begin
+    -- jika kode_merek baru tidak sama dengan kode_merek yang lama
+    if(:new.kode_merek <> :old.kode_merek) then
+        raise_application_error(-20001,'kode_merek merek tidak bisa diubah..!');
+    end if;
+end;
+
+/*
+*  membuat trigger cek_pr_update_mobil before update untuk mencegah update kode_mobil primary
+*/
+create or replace trigger cek_pr_update_mobil
+    before update on mobil
+    for each row
+begin
+    -- jika kode_mobil baru tidak sama dengan kode_mobil yang lama
+    if(:new.kode_mobil <> :old.kode_mobil) then
+        raise_application_error(-20001,'kode_mobil mobil tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_paket before update untuk mencegah update kode_paket primary
+*/
+create or replace trigger cek_pr_update_paket
+    before update on paket_kredit
+    for each row
+begin
+    -- jika kode_paket baru tidak sama dengan kode_paket yang lama
+    if(:new.kode_paket <> :old.kode_paket) then
+        raise_application_error(-20001,'kode_paket paket_kredit tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_transaksi before update untuk mencegah update kode_transaksi primary
+*/
+create or replace trigger cek_pr_update_transaksi
+    before update on transaksi
+    for each row
+begin
+    -- jika kode_transaksi baru tidak sama dengan kode_transaksi yang lama
+    if(:new.kode_transaksi <> :old.kode_transaksi) then
+        raise_application_error(-20001,'kode_transaksi transaksi tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_kredit before update untuk mencegah update kode_kredit primary
+*/
+create or replace trigger cek_pr_update_kredit
+    before update on kredit
+    for each row
+begin
+    -- jika kode_kredit baru tidak sama dengan kode_kredit yang lama
+    if(:new.kode_kredit <> :old.kode_kredit) then
+        raise_application_error(-20001,'kode_kredit kredit tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_cash before update untuk mencegah update kode_cash primary
+*/
+create or replace trigger cek_pr_update_cash
+    before update on cash
+    for each row
+begin
+    -- jika kode_cash baru tidak sama dengan kode_cash yang lama
+    if(:new.kode_cash <> :old.kode_cash) then
+        raise_application_error(-20001,'kode_cash cash tidak bisa diubah..!');
+    end if;
+end;
+
+
+/*
+*  membuat trigger cek_pr_update_cicilan before update untuk mencegah update kode_cicilan primary
+*/
+create or replace trigger cek_pr_update_cicilan
+    before update on cicilan
+    for each row
+begin
+    -- jika kode_cicilan baru tidak sama dengan kode_cicilan yang lama
+    if(:new.kode_cicilan <> :old.kode_cicilan) then
+        raise_application_error(-20001,'kode_cicilan cicilan tidak bisa diubah..!');
+    end if;
+end;
+
+/* ------ end of trigger operasi before update ------ */
+
+
+/* ------ trigger operasi before delete ------ */
+/*
+*  membuat trigger cegah_delete_customer before delete untuk mencegah delete customer
+*/
+create or replace trigger cegah_delete_customer
+    before delete on customer
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table customer tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_tipe before delete untuk mencegah delete tipe
+*/
+create or replace trigger cegah_delete_tipe
+    before delete on tipe
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table tipe tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_merek before delete untuk mencegah delete merek
+*/
+create or replace trigger cegah_delete_merek
+    before delete on merek
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table merek tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_paket before delete untuk mencegah delete paket_kredit
+*/
+create or replace trigger cegah_delete_paket
+    before delete on paket_kredit
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table paket_kredit tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_sales before delete untuk mencegah delete sales
+*/
+create or replace trigger cegah_delete_sales
+    before delete on sales
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table sales tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_mobil before delete untuk mencegah delete mobil
+*/
+create or replace trigger cegah_delete_mobil
+    before delete on mobil
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table mobil tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_kredit before delete untuk mencegah delete kredit
+*/
+create or replace trigger cegah_delete_kredit
+    before delete on kredit
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table kredit tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_cash before delete untuk mencegah delete cash
+*/
+create or replace trigger cegah_delete_cash
+    before delete on cash
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table cash tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_cicilan before delete untuk mencegah delete cicilan
+*/
+create or replace trigger cegah_delete_cicilan
+    before delete on cicilan
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table cicilan tidak dapat dihapus');
+end;
+
+
+/*
+*  membuat trigger cegah_delete_cicilan before delete untuk mencegah delete cicilan
+*/
+create or replace trigger cegah_delete_transaksi
+    before delete on transaksi
+    for each row
+begin
+    raise_application_error(-20002,'Mohon Maaf Record table transaksi tidak dapat dihapus');
+end;
+
+/* ------ end of trigger operasi before delete ------ */
+
+
 /*
 create or replace trigger del_transaksi
     before delete on transaksi
@@ -1122,150 +1383,24 @@ drop trigger otosum_in_cash_transkasi;
 
 */
 
+
+
 /* 
-*  End of Triggers
+*  =========== End of Triggers ===========
 */
 
 
 
 /* 
-*  Creating Database Manipulation Language(DML) start here 
+*  =========== Database Manipulation Language(DML) start here ===========
 */
-
-insert into merek
-values(
-s_merek.nextVal,
-'Honda',
-'Jepang'
-);
-
-insert into merek
-values(
-s_merek.nextVal,
-'Suzuki',
-'Jepang'
-);
-
-insert into tipe
-values(
-s_tipe.nextVal,
-'MPV'
-);
-
-select * from mobil;
-
-update
-    mobil
-set
-    mobil.nama_mobil = 'dudung'
-where
-    mobil.kode_mobil = 'HON10019';
-
-insert into mobil
-values(
-s_mobil.nextVal,
-'Teses',
-'Hijau',
-'100000000',
-'keren nih',
-'tes.jpg',
-'T10000',
-'MRK10000'
-);
-
-insert into sales
-values(
-s_sales.nextVal,
-'Salim',
-'salimin',
-'salimsalam.jpg'
-);
-
-insert into customer
-values(
-'4654543254543',
-'ricko',
-'jalan. jalan kepasar',
-'089674869559'
-);
-
-insert into transaksi
-(
-kode_transaksi,
-NIK,
-tgl_transaksi,
-jenis_transaksi,
-kode_sales,
-total_harga
-)
-values(
-s_transaksi.nextVal,
-'4654543254543',
-to_date(sysdate,'dd/mm/yyyy'),
-'tunai',
-'P1107',
-'0'
-);
-
-insert into kredit
-(
-kode_kredit,
-kode_transaksi,
-kode_mobil,
-kode_paket,
-status_kredit
-)
-values(
-s_kredit.nextVal,
-'TRX100040',
-'HON10019',
-'PKT10002',
-'belum lunas'
-);
-
-insert into cicilan
-(
-kode_cicilan,
-kode_transaksi,
-kode_kredit
-)
-values(
-s_cicilan.nextVal,
-'TRX100040',
-'BKR10001'
-);
-
-insert into paket_kredit
-(
-kode_paket,
-nama_paket,
-dp,
-biaya_angsuran,
-jumlah_angsuran
-)
-values(
-s_paket.nextVal,
-'2 tahun cicilan',
-'0.5',
-'3.958',
-'24'
-);
-
-insert into cash
-(
-kode_cash,
-kode_transaksi,
-kode_mobil
-)
-values
-(
-s_cash.nextVal,
-'TRX100040',
-'HON10019'
-);
 
 select CURRENT_TIME from dual;
 
+delete from sales;
+delete from cicilan;
+delete from kredit;
+delete from cash;
 delete from transaksi;
 
 delete from paket_kredit;
@@ -1303,7 +1438,6 @@ where rownum = 1
 */
 
 /*============== DML START HERE=============== */
-
 
 /* insert sales */
 insert into 
@@ -1725,7 +1859,6 @@ s_mobil.nextVal,
 'MRK10000'
 );
 
--- error here  ########################################
 insert into mobil
 (
 kode_mobil,
@@ -1742,8 +1875,8 @@ s_mobil.nextVal,
 'Hijau',
 '100000000',
 'keren nih',
-'T10020',
-'MRK10020'
+'T10001',
+'MRK10001'
 );
 
 
@@ -1763,8 +1896,8 @@ s_mobil.nextVal,
 'Hitam',
 '138900000',
 'mobil sedan anda',
-'T10020',
-'MRK10021'
+'T10001',
+'MRK10002'
 );
 
 
@@ -1784,8 +1917,8 @@ s_mobil.nextVal,
 'Merah',
 '255900000',
 'City car terbaik manuver kuat berkualitas',
-'T10021',
-'MRK10022'
+'T10002',
+'MRK10003'
 );
 
 
@@ -1826,8 +1959,8 @@ s_mobil.nextVal,
 'Putih',
 '135900000',
 'to be a most car in the city',
-'T10023',
-'MRK10021'
+'T10004',
+'MRK10004'
 );
 
 /* insert transaksi */
@@ -1844,7 +1977,7 @@ s_transaksi.nextVal,
 '11155678437623',
 to_date('12/05/2015','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1100'
 );
 
 
@@ -1861,7 +1994,7 @@ s_transaksi.nextVal,
 '9375338474827',
 to_date('11/11/2016','dd/mm/yyyy'),
 'tunai',
-'P1123'
+'S1101'
 );
 
 
@@ -1880,7 +2013,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('09/01/2016','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1100'
 );
 
 
@@ -1896,10 +2029,10 @@ kode_sales
 )
 values(
 s_transaksi.nextVal,
-'09493487475834848   ',
+'9493481115834848',
 to_date('22/07/2016','dd/mm/yyyy'),
 'tunai',
-'P1100'
+'S1102'
 );
 
 
@@ -1918,7 +2051,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('17/05/2015','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1103'
 );
 
 
@@ -1937,7 +2070,7 @@ s_transaksi.nextVal,
 '54564644454212      ',
 to_date('19/05/2016','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1104'
 );
 
 
@@ -1956,7 +2089,7 @@ s_transaksi.nextVal,
 '11155678437623',
 to_date('12/07/2015','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1103'
 );
 
 
@@ -1975,7 +2108,7 @@ s_transaksi.nextVal,
 '2015318923823       ',
 to_date('12/05/2015','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1102'
 );
 
 
@@ -1994,7 +2127,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('10/02/2016','dd/mm/yyyy'),
 'tunai',
-'P1123'
+'S1102'
 );
 
 
@@ -2013,7 +2146,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('12/07/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1101'
 );
 
 
@@ -2032,7 +2165,7 @@ s_transaksi.nextVal,
 '9375338474827       ',
 to_date('12/05/2015','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1100'
 );
 
 insert into transaksi
@@ -2048,7 +2181,7 @@ s_transaksi.nextVal,
 '11155678437623',
 to_date('12/07/2015','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1103'
 );
 
 
@@ -2067,7 +2200,7 @@ s_transaksi.nextVal,
 '2015318923823       ',
 to_date('28/05/2016','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1103'
 );
 
 
@@ -2086,7 +2219,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('10/08/2016','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1102'
 );
 
 
@@ -2105,7 +2238,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('12/04/2016','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1100'
 );
 
 
@@ -2124,7 +2257,7 @@ s_transaksi.nextVal,
 '9375338474827       ',
 to_date('10/03/2016','dd/mm/yyyy'),
 'tunai',
-'P1123'
+'S1100'
 );
 
 -- next
@@ -2142,7 +2275,7 @@ s_transaksi.nextVal,
 '2015318923823       ',
 to_date('28/06/2015','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1102'
 );
 
 
@@ -2161,7 +2294,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('10/09/2016','dd/mm/yyyy'),
 'tunai',
-'P1123'
+'S1101'
 );
 
 
@@ -2180,7 +2313,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('12/07/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1103'
 );
 
 
@@ -2199,7 +2332,7 @@ s_transaksi.nextVal,
 '9375338474827       ',
 to_date('25/03/2016','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1104'
 );
 
 insert into transaksi
@@ -2215,7 +2348,7 @@ s_transaksi.nextVal,
 '2015318923823       ',
 to_date('28/10/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1103'
 );
 
 
@@ -2234,7 +2367,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('20/08/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1102'
 );
 
 
@@ -2253,7 +2386,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('12/01/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1101'
 );
 
 
@@ -2272,7 +2405,7 @@ s_transaksi.nextVal,
 '9375338474827       ',
 to_date('10/01/2016','dd/mm/yyyy'),
 'tunai',
-'P1120'
+'S1100'
 );
 
 insert into transaksi
@@ -2288,7 +2421,7 @@ s_transaksi.nextVal,
 '2015318923823       ',
 to_date('28/05/2016','dd/mm/yyyy'),
 'tunai',
-'P1123'
+'S1101'
 );
 
 
@@ -2307,7 +2440,7 @@ s_transaksi.nextVal,
 '11122233344455      ',
 to_date('11/09/2016','dd/mm/yyyy'),
 'tunai',
-'P1122'
+'S1102'
 );
 
 
@@ -2326,7 +2459,7 @@ s_transaksi.nextVal,
 '9095123928381       ',
 to_date('12/09/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1103'
 );
 
 
@@ -2345,7 +2478,7 @@ s_transaksi.nextVal,
 '9375338474827       ',
 to_date('10/11/2016','dd/mm/yyyy'),
 'tunai',
-'P1121'
+'S1104'
 );
 
 
@@ -2360,13 +2493,13 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100001',
-'MIT10000',
+'HON10000',
 'PKT10003'
 );
-
+/*
 exec in_bonus_sales('TRX100001','MIT10000');
 exec in_peluang_cust('TRX100001','MIT10000');
-
+*/
 insert into kredit
 (
 kode_kredit,
@@ -2376,31 +2509,10 @@ kode_paket
 )
 values(
 s_kredit.nextVal,
-'TRX100021',
-'TOY10027',
-'PKT10020'
+'TRX100001',
+'TOY10001',
+'PKT10001'
 );
-
-exec in_bonus_sales('TRX100021','TOY10027');
-exec in_peluang_cust('TRX100021','TOY10027');
-
-
-insert into kredit
-(
-kode_kredit,
-kode_transaksi,
-kode_mobil,
-kode_paket
-)
-values(
-s_kredit.nextVal,
-'TRX100022',
-'MIT10026',
-'PKT10022'
-);
-
-exec in_bonus_sales('TRX100022','MIT10026');
-exec in_peluang_cust('TRX100022','MIT10026');
 
 
 insert into kredit
@@ -2412,12 +2524,10 @@ kode_paket
 )
 values(
 s_kredit.nextVal,
-'TRX100023',
-'FOR10022',
-'PKT10021'
+'TRX100002',
+'MIT10003',
+'PKT10002'
 );
-exec in_bonus_sales('TRX100023','FOR10022');
-exec in_peluang_cust('TRX100023','FOR10022');
 
 
 insert into kredit
@@ -2429,13 +2539,26 @@ kode_paket
 )
 values(
 s_kredit.nextVal,
-'TRX100024',
-'TOY10027  ',
-'PKT10020'
+'TRX100004',
+'FOR10002',
+'PKT10001'
 );
 
-exec in_bonus_sales('TRX100023','TOY10027');
-exec in_peluang_cust('TRX100023','TOY10027');
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100004',
+'TOY10001',
+'PKT10000'
+);
+-- # insert data sampai sini #
 
 /* insert cicilan */
 insert into cicilan
@@ -2446,8 +2569,8 @@ kode_kredit
 )
 values(
 s_cicilan.nextVal,
-'TRX100024',
-'BKR10000'
+'TRX100009',
+'BKR10001'
 );
 
 insert into cicilan
@@ -2459,7 +2582,7 @@ kode_kredit
 values(
 s_cicilan.nextVal,
 'TRX100025',
-'BKR10020'
+'BKR10002'
 );
 
 
@@ -2472,7 +2595,7 @@ kode_kredit
 values(
 s_cicilan.nextVal,
 'TRX100026',
-'BKR10021'
+'BKR10004'
 );
 
 
@@ -2485,7 +2608,7 @@ kode_kredit
 values(
 s_cicilan.nextVal,
 'TRX100026',
-'BKR10022'
+'BKR10000'
 );
 
 insert into cicilan
@@ -2497,7 +2620,7 @@ kode_kredit
 values(
 s_cicilan.nextVal,
 'TRX100027',
-'BKR10022'
+'BKR10003'
 );
 
 insert into cicilan
@@ -2508,8 +2631,8 @@ kode_kredit
 )
 values(
 s_cicilan.nextVal,
-'TRX100028',
-'BKR10023'
+'TRX100008',
+'BKR10002'
 );
 
 
@@ -2521,8 +2644,8 @@ kode_kredit
 )
 values(
 s_cicilan.nextVal,
-'TRX100029',
-'BKR10023'
+'TRX100009',
+'BKR10001'
 );
 
 /* insert cash */
@@ -2536,7 +2659,7 @@ values
 (
 s_cash.nextVal,
 'TRX100001',
-'MIT10000'
+'HON10000'
 );
 
 
@@ -2549,12 +2672,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100026',
-'TOY10027'
+'TRX100006',
+'TOY10001'
 );
-
-exec in_bonus_sales('TRX100026','TOY10027');
-exec in_peluang_cust('TRX100026','TOY10027');
 
 
 insert into cash
@@ -2566,12 +2686,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100027',
-'TOY10021'
+'TRX100003',
+'FOR10002'
 );
-
-exec in_bonus_sales('TRX100027','TOY10021');
-exec in_peluang_cust('TRX100027','TOY10021');
 
 
 insert into cash
@@ -2583,12 +2700,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100028',
-'FOR10022  '
+'TRX100018',
+'FOR10002'
 );
-
-exec in_bonus_sales('TRX100028','TOY10022');
-exec in_peluang_cust('TRX100028','TOY10022');
 
 
 insert into cash
@@ -2600,12 +2714,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100029',
-'FOR10023  '
+'TRX100019',
+'SUZ10004'
 );
-
-exec in_bonus_sales('TRX100029','FOR10023');
-exec in_peluang_cust('TRX100029','FOR10023');
 
 
 insert into cash
@@ -2617,12 +2728,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100030',
-'TOY10027  '
+'TRX100010',
+'TOY10001'
 );
-
-exec in_bonus_sales('TRX100030','TOY10027');
-exec in_peluang_cust('TRX100030','TOY10027');
 
 
 insert into cash
@@ -2634,12 +2742,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100029',
-'FOR10022  '
+'TRX100009',
+'FOR10002'
 );
-
-exec in_bonus_sales('TRX100029','FOR10022');
-exec in_peluang_cust('TRX100029','FOR10022');
 
 
 insert into cash
@@ -2651,12 +2756,9 @@ kode_mobil
 values
 (
 s_cash.nextVal,
-'TRX100031',
-'TOY10021'
+'TRX100011',
+'MIT10003'
 );
-
-exec in_bonus_sales('TRX100031','TOY10021');
-exec in_peluang_cust('TRX100031','TOY10021');
 
 
 exec hitung_transaksi('TRX100001');
