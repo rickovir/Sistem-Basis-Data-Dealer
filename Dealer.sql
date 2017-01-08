@@ -5,11 +5,27 @@ On Esa Unggul University
 Date Created 04 Jan 2017
 Make for Oracle Database environment
 Using SQL(Structured Query Languange) for Structured code sintax 
+
+
+Search keyword :
+
+#1 Data Definition Language (DDL)
+
+#2 Sequence 
+
+#3 Trigger
+
+#4 Store Procedure
+
+#5 Data Manipulation Language (DML)
+
+#6 View
+
 */
 
 
 /*
-*  =========== Data Definition Language (DDL) start here ===========
+*  =========== #1 Data Definition Language (DDL) start here ===========
 */
 
 -- membuat tabel untuk sales
@@ -118,54 +134,6 @@ create table cicilan(
     foreign key(kode_kredit) references kredit(kode_kredit)
 );
 
-
-/* table belum jelas
-create table undian(
-    NIK char(20) not null,
-    kode_mobil char(10) not null,
-    foreign key(NIK) references customer(NIK),
-    foreign key(kode_mobil) references mobil(kode_mobil),
-    primary key(NIK, kode_mobil)
-);
-
-create table cust_harian_peluang(
-    NIK char(20) not null,
-    hari char(20) not null,
-    foreign key(NIK) references customer(NIK),
-    primary key(NIK,hari)
-);
-
-
-create table sales_merek_bonus(
-    kode_sales char(5) not null,
-    kode_merek varchar2(10) not null,
-    foreign key(kode_sales) references sales(kode_sales),
-    foreign key(kode_merek) references merek(kode_merek),
-    primary key(kode_sales, kode_merek)
-);
-
-create table sales_mobil_bonus(
-    kode_sales char(5) not null,
-    kode_mobil char(10) not null,
-    foreign key(kode_sales) references sales(kode_sales),
-    foreign key(kode_mobil) references mobil(kode_mobil),
-    primary key(kode_sales, kode_mobil)
-);
-
-create table merek_mobil_bonus(
-    kode_merek varchar2(10) not null,
-    kode_mobil char(10) not null,
-    foreign key(kode_mobil) references mobil(kode_mobil),
-    foreign key(kode_merek) references merek(kode_merek),
-    primary key(kode_mobil, kode_merek)
-);
-
-alter table undian rename to cust_mobil_peluang;
-
-alter table cust_harian_peluang rename to cust_hari_peluang;
-
-*/
-
 -- alter table cicilan untuk menambah column denda pada table cicilan
 alter table cicilan add denda number(10) not null;
 
@@ -208,15 +176,6 @@ alter table paket_kredit modify dp number(7,3);
 -- alter table paket_kredit untuk mengubah kolom biaya_angsuran ke decimal number
 alter table paket_kredit modify biaya_angsuran number(7,3);
 
--- alter table paket_kredit untuk mengubah kolom biaya_angsuran ke decimal number
---alter table cicilan drop column harga_cicilan;
-
-/*
-alter table sales_merek_bonus modify kode_sales char(5);
-
-alter table sales_mobil_bonus modify kode_sales char(5);
-*/
-
 
 /*
 *  =========== This is end of Data Definition Language (DDL) ===========
@@ -224,7 +183,7 @@ alter table sales_mobil_bonus modify kode_sales char(5);
 
 
 /*
-*  =========== Sequence start here ===========
+*  =========== #2 Sequence start here ===========
 */
 
 /*
@@ -264,7 +223,7 @@ create sequence s_paket start with 10000;
 */
 
 /* 
-*  =========== Store procedure start here ===========
+*  =========== Store #3 procedure start here ===========
 */
 
 /* 
@@ -558,11 +517,17 @@ create or replace procedure hitung_transaksi(kode_transaksi char)
 is
     total number; -- deklarasi variabel total
 begin
+    total :=0;
     -- menjumlahkan harga dari kredit, cash, dan cicilan ke variabel total
     total := total_kredit_pertransaksi(kode_transaksi) + total_cash_pertransaksi(kode_transaksi) + total_cicilan_pertransaksi(kode_transaksi);
     -- menambahkan total ke dalam total_harga ditable transaksi
     count_total_transaksi(kode_transaksi, total);
 end;
+
+update transaksi set total_harga = 0 where kode_transaksi = 'TRX100000';
+exec hitung_transaksi('TRX100006');
+exec hitung_transaksi('TRX100007');
+select * from transaksi
 
 
 /* 
@@ -679,7 +644,7 @@ end;
 *  pertransaksi yang telah dilakukan
 *  menggunakan dari kode_transaksi tertentu
 */
-create or replace function total_cash_pertransaksi(kode_transaksi char)
+create or replace function total_cash_pertransaksi(trx_kode_transaksi char)
 return number -- keluaran berupa number
 is
     total number; -- deklarasi variabel total
@@ -690,7 +655,7 @@ is
         from
             cash
         where
-            cash.kode_transaksi = kode_transaksi;
+            cash.kode_transaksi = trx_kode_transaksi;
 begin
     -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
@@ -708,7 +673,7 @@ end;
 *  pertransaksi yang telah dilakukan
 *  menggunakan dari kode_transaksi tertentu
 */
-create or replace function total_kredit_pertransaksi(kode_transaksi char)
+create or replace function total_kredit_pertransaksi(trx_kode_transaksi char)
 return number -- keluaran berupa number
 is
     total number; -- deklarasi variabel total
@@ -719,7 +684,7 @@ is
         from
             kredit
         where
-            kredit.kode_transaksi = kode_transaksi;
+            kredit.kode_transaksi = trx_kode_transaksi;
 begin
     -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
@@ -737,7 +702,7 @@ end;
 *  pertransaksi yang telah dilakukan
 *  menggunakan dari kode_transaksi tertentu
 */
-create or replace function total_cicilan_pertransaksi(kode_transaksi char)
+create or replace function total_cicilan_pertransaksi(trx_kode_transaksi char)
 return number -- keluaran berupa number
 is
     total number; -- deklarasi variabel total
@@ -748,7 +713,7 @@ is
         from
             cicilan
         where
-            cicilan.kode_transaksi = kode_transaksi;
+            cicilan.kode_transaksi = trx_kode_transaksi;
 begin
     -- mengeset total adalah 0 untuk nantinya menampung data operasi penjumlahan seluruh harga
     total := 0;
@@ -756,7 +721,6 @@ begin
     for cicilan_fetch in c1
     loop
         --total := total + find_angsuran(cicilan_fetch.kode_kredit);-- menghitung total harga angsuran mobil
-        
         total := total + cicilan_fetch.harga_cicilan;-- menghitung total harga cicilan mobil
     end loop;
     return total; -- mengembalikan keluaran dari total
@@ -769,7 +733,7 @@ end;
 
 
 /* 
-*  =========== Trigger start here ===========
+*  =========== #4 Trigger start here ===========
 */
 
 /* ------ trigger operasi before insert ------ */
@@ -1289,101 +1253,6 @@ end;
 /* ------ end of trigger operasi before delete ------ */
 
 
-/*
-create or replace trigger del_transaksi
-    before delete on transaksi
-    for each row
-begin
-    delete from cicilan where cicilan.kode_transaksi = :old.kode_transaksi;
-    delete from cash where cash.kode_transaksi = :old.kode_transaksi;
-    delete from kredit where kredit.kode_transaksi = :old.kode_transaksi;
-end;
-
-
-drop trigger UP_ACT_KREDIT;
-drop trigger UP_ACT_CASH;
-*/
-/*
-create or replace trigger otosum_in_cash_transkasi
-    after insert on cash
-    for each row
-begin  
-    count_total_transaksi(:new.kode_transaksi, find_h_mobil(:new.kode_mobil));
-end;
-
-
-create or replace trigger otosum_up_cash_transkasi
-    after update on cash
-    for each row
-    declare 
-    h_lama number;
-    h_baru number;
-    hitung number;
-begin  
-    h_lama := find_h_mobil(:old.kode_mobil);
-    h_baru := find_h_mobil(:new.kode_mobil);
-    hitung := h_baru - h_lama;
-    count_total_transaksi(:new.kode_transaksi, hitung);
-end;
-
-create or replace trigger otosum_dl_cash_transkasi
-    before delete on cash
-    for each row
-    declare 
-    h_lama number;
-    hitung number;
-begin  
-    h_lama := find_h_mobil(:old.kode_mobil);
-    hitung := h_lama*(-1);
-    count_total_transaksi(:new.kode_transaksi, hitung);
-end;
-
-
-create or replace trigger otosum_in_kredit_transkasi
-    after insert on kredit
-    for each row
-begin  
-    count_total_transaksi(:new.kode_transaksi, find_h_mobil(:new.kode_mobil));
-end;
-
-
-create or replace trigger otosum_up_kredit_transkasi
-    after update on kredit
-    for each row
-    declare 
-    dp_lama number;
-    dp_baru number;
-    hitung number;
-begin  
-    dp_lama := find_dp(:old.kode_paket,:old.kode_mobil);
-    dp_baru := find_dp(:new.kode_paket,:new.kode_mobil);
-    hitung := dp_baru - dp_lama;
-    count_total_transaksi(:new.kode_transaksi, hitung);
-end;
-
-
-create or replace trigger otosum_dl_kredit_transkasi
-    before delete on kredit
-    for each row
-    declare 
-    dp_lama number;
-    hitung number;
-begin  
-    dp_lama := find_dp(:old.kode_paket,:old.kode_mobil);
-    hitung := dp_lama*(-1);
-    count_total_transaksi(:new.kode_transaksi, hitung);
-end;
-
-drop trigger otosum_dl_kredit_transkasi;
-drop trigger otosum_up_kredit_transkasi;
-drop trigger otosum_in_kredit_transkasi;
-drop trigger otosum_dl_cash_transkasi;
-drop trigger otosum_up_cash_transkasi;
-drop trigger otosum_in_cash_transkasi;
-
-*/
-
-
 
 /* 
 *  =========== End of Triggers ===========
@@ -1392,7 +1261,7 @@ drop trigger otosum_in_cash_transkasi;
 
 
 /* 
-*  =========== Database Manipulation Language(DML) start here ===========
+*  =========== #5 Database Manipulation Language(DML) start here ===========
 */
 
 select CURRENT_TIME from dual;
@@ -1423,8 +1292,13 @@ select * from customer;
 
 
 select * from sales;
-exec count_total_transaksi('TRX100040',total_cicilan_pertransaksi('TRX100040'));
-exec DBMS_OUTPUT.PUT_LINE(find_angsuran('BKR10041'));
+exec count_total_transaksi('TRX100012',total_cicilan_pertransaksi('TRX100012'));
+exec count_total_transaksi('TRX100012',total_kredit_pertransaksi('TRX100012'));
+exec count_total_transaksi('TRX100012',total_cash_pertransaksi('TRX100012'));
+exec count_total_transaksi('TRX100013',total_cicilan_pertransaksi('TRX100013'));
+exec DBMS_OUTPUT.PUT_LINE(find_angsuran('BKR10003'));
+exec DBMS_OUTPUT.PUT_LINE(total_cicilan_pertransaksi('TRX100026'));
+exec DBMS_OUTPUT.PUT_LINE(total_kredit_pertransaksi('TRX100014'));
 
 exec find_angsuran('BKR10001');
 /*SELECT A DAY 
@@ -2761,20 +2635,48 @@ s_cash.nextVal,
 );
 
 
+exec hitung_transaksi('TRX100000');
 exec hitung_transaksi('TRX100001');
+exec hitung_transaksi('TRX100002');
+exec hitung_transaksi('TRX100003');
+exec hitung_transaksi('TRX100004');
+exec hitung_transaksi('TRX100005');
+exec hitung_transaksi('TRX100006');
+exec hitung_transaksi('TRX100007');
+exec hitung_transaksi('TRX100008');
+exec hitung_transaksi('TRX100009');
+exec hitung_transaksi('TRX100010');
+exec hitung_transaksi('TRX100011');
+exec hitung_transaksi('TRX100012');
+exec hitung_transaksi('TRX100013');
+exec hitung_transaksi('TRX100014');
+exec hitung_transaksi('TRX100015');
+exec hitung_transaksi('TRX100016');
+exec hitung_transaksi('TRX100017');
+exec hitung_transaksi('TRX100018');
+exec hitung_transaksi('TRX100019');
+exec hitung_transaksi('TRX100020');
+exec hitung_transaksi('TRX100021');
+exec hitung_transaksi('TRX100022');
+exec hitung_transaksi('TRX100023');
+exec hitung_transaksi('TRX100024');
+exec hitung_transaksi('TRX100025');
+exec hitung_transaksi('TRX100026');
+exec hitung_transaksi('TRX100027');
 select * from transaksi;
-exec in_bonus_sales('TRX100001','MIT10000');
-exec in_peluang_cust('TRX100001','MIT10000');
+
+/* 
+*  =========== End of Database Manipulation Language(DML) ===========
+*/
 
 
+
+/* 
+*  =========== #6 View start here ===========
+*/
 -- !!!!!!!!!!!!!!!!!!!!!!!1 VIEW BELUM BUAT !!!!!!!!!!!!!!!!!!!!
 create or replace view v_cicilan as select * from cicilan;
 create or replace view v_kredit as select * from kredit;
-create or replace view v_cust_mobil_peluang as select * from cust_mobil_peluang;
-create or replace view v_sales_mobil_bonus as select * from sales_mobil_bonus;
-create or replace view v_merek_mobil_bonus as select * from merek_mobil_bonus;
-create or replace view v_sales_merek_bonus as select * from sales_merek_bonus;
-create or replace view v_cust_hari_peluang as select * from cust_hari_peluang;
 create or replace view v_cash as select * from cash;
 create or replace view v_transaksi as select * from transaksi;
 create or replace view v_paket_kredit as select * from paket_kredit;
@@ -2784,7 +2686,465 @@ create or replace view v_tipe as select * from tipe;
 create or replace view v_sales as select * from sales;
 create or replace view v_customer as select * from customer;
 
-create or replace view v_trans_pertanggal as select * from transaksi where tgl_transaksi = to_date('12/05/2015','dd/mm/yyyy');
+-- operasi tanggal transaksi
 
-create or replace view v_trans_perbulan as select * from transaksi where tgl_transaksi = to_date('12/05/2015','dd/mm/yyyy');
- 
+-- view menampilkan transaksi perbulannya dan jumlah transaksi beserta total harga pembelian dalam sebulan
+create or replace view v_trans_perbulan as
+select
+    to_char(tgl_transaksi, 'YYYY-MONTH') as TAHUN_BULAN, -- untuk tampil tahun dan bulan
+    count(kode_transaksi) as jumlah_transaksi, -- menghitung banyak transaksi
+    sum(total_harga) as harga_total --menjumlahkan total harga
+from
+    transaksi
+group by
+    to_char(tgl_transaksi, 'YYYY-MONTH') -- gruping pertahun bulan
+;
+
+-- view menampilkan transaksi perhari dan jumlah transaksi beserta total harga pembelian dalam sehari
+create or replace view v_trans_perhari as
+select
+    to_char(tgl_transaksi, 'DD-MONTH-YYYY') as hari, -- untuk tampil hari ex: 3 JAN 2017
+    count(kode_transaksi) as jumlah_transaksi, -- menghitung banyak transaksi
+    sum(total_harga) as harga_total --menjumlahkan total harga
+from
+    transaksi
+group by
+    to_char(tgl_transaksi, 'DD-MONTH-YYYY') -- gruping perhari
+;
+
+-- view menampilkan transaksi perhari dalam seminggunya dan jumlah transaksi beserta total harga pembelian perhari dalam seminggu
+create or replace view v_trans_perhari_minggu as
+select
+    to_char(tgl_transaksi, 'DAY') as hari_perminggu, -- untuk tampil nama hari ex: SUNDAY
+    count(kode_transaksi) as jumlah_transaksi, -- menghitung banyak transaksi
+    sum(total_harga) as harga_total --menjumlahkan total harga
+from
+    transaksi
+group by
+    to_char(tgl_transaksi, 'DAY') -- gruping hari perminggu
+;
+
+-- end of operasi tanggal transaksi
+
+
+-- operasi view customer
+
+-- view menampilkan banyak transaksi yang dilakukan setiap customer
+create or replace view v_customer_trans_count as
+select
+    customer.nama_customer as nama_customer, banyak_transaksi
+from
+    (select
+        transaksi.NIK as NIK, count(transaksi.kode_transaksi) as banyak_transaksi
+    from
+        transaksi
+    group by
+        transaksi.NIK
+    ) customer_transaksi,
+    customer
+where
+    customer_transaksi.NIK = customer.NIK;
+    
+    
+-- view menampilkan banyak transaksi kredit yang dilakukan setiap customer
+create or replace view v_customer_trans_kredit_count as
+select
+    customer.nama_customer as nama_customer, banyak_transaksi_kredit
+from
+    (
+    select
+        trx_kredit.NIK as NIK, count(trx_kredit.trx_kode_transaksi) as banyak_transaksi_kredit
+    from
+        (
+        select
+            transaksi.NIK as NIK, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            kredit, transaksi
+        where
+            kredit.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_kredit
+    group by
+        trx_kredit.NIK
+    ) 
+    customer_transaksi,  -- sub query untuk mencari banyak transaksi yang dilakukan customer
+    customer
+where
+    customer_transaksi.NIK = customer.NIK;
+
+
+-- view menampilkan transaksi kredit yang belum lunas yang dilakukan setiap customer
+create or replace view v_customer_kredit_belum_lunas as
+select
+    customer.nama_customer, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
+from
+    customer,
+    transaksi,
+    kredit
+where
+    customer.NIK = transaksi.NIK
+and
+    transaksi.kode_transaksi = kredit.kode_transaksi
+and 
+    kredit.status_kredit = 'belum lunas';
+
+
+-- view menampilkan transaksi kredit yang sudah lunas yang dilakukan setiap customer
+create or replace view v_customer_kredit_lunas as
+select
+    customer.nama_customer, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
+from
+    customer,
+    transaksi,
+    kredit
+where
+    customer.NIK = transaksi.NIK
+and
+    transaksi.kode_transaksi = kredit.kode_transaksi
+and 
+    kredit.status_kredit = 'lunas';
+
+
+
+-- view menampilkan banyak transaksi cash yang dilakukan setiap customer
+create or replace view v_customer_trans_cash_count as
+select
+    customer.nama_customer as nama_customer, banyak_transaksi_cash
+from
+    (
+    select
+        trx_cash.NIK as NIK, count(trx_cash.trx_kode_transaksi) as banyak_transaksi_cash
+    from
+        (
+        select
+            transaksi.NIK as NIK, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            cash, transaksi
+        where
+            cash.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_cash
+    group by
+        trx_cash.NIK
+    ) 
+    customer_transaksi,
+    customer
+where
+    customer_transaksi.NIK = customer.NIK;
+
+
+
+-- view menampilkan transaksi cash yang dilakukan setiap customer
+create or replace view v_customer_cash as
+select
+    customer.nama_customer, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
+from
+    customer,
+    transaksi,
+    cash
+where
+    customer.NIK = transaksi.NIK
+and
+    transaksi.kode_transaksi = cash.kode_transaksi;
+    
+
+-- view menampilkan banyak transaksi bayar cicilan yang dilakukan setiap customer
+create or replace view v_customer_trans_cicilan_count as
+select
+    customer.nama_customer as nama_customer, banyak_transaksi_cicilan
+from
+    (
+    select
+        trx_cicilan.NIK as NIK, count(trx_cicilan.trx_kode_transaksi) as banyak_transaksi_cicilan
+    from
+        (
+        select
+            transaksi.NIK as NIK, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            cicilan, transaksi
+        where
+            cicilan.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_cicilan
+    group by
+        trx_cicilan.NIK
+    ) 
+    customer_transaksi,
+    customer
+where
+    customer_transaksi.NIK = customer.NIK;
+    
+-- end operasi view customer
+
+-- cicilan blum
+
+--  operasi view sales
+
+-- view menampilkan banyak transaksi yang dilakukan setiap sales
+create or replace view v_sales_trans_count as
+select
+    sales.nama_sales as nama_sales, banyak_transaksi -- tampil nama sales dan banyak transaksi
+from
+    (select
+        transaksi.kode_sales as kode_sales, count(transaksi.kode_transaksi) as banyak_transaksi -- mengluarkan kode_sales dan banyak transaki
+    from
+        transaksi
+    group by
+        transaksi.kode_sales
+    ) sales_work, -- sub query untuk mencari banyak transaksi yang dilakukan sales
+    sales -- untuk digabung dengan table sales
+where
+    sales_work.kode_sales = sales.kode_sales;
+
+-- view menampilkan banyak transaksi kredit yang dilakukan setiap sales
+create or replace view v_sales_trans_kredit_count as
+select
+    sales.nama_sales as nama_sales, banyak_transaksi_kredit
+from
+    (
+    select
+        trx_kredit.kode_sales as kode_sales, count(trx_kredit.trx_kode_transaksi) as banyak_transaksi_kredit
+    from
+        (
+        select
+            transaksi.kode_sales as kode_sales, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            kredit, transaksi
+        where
+            kredit.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_kredit
+    group by
+        trx_kredit.kode_sales
+    ) 
+    sales_transaksi,  -- sub query untuk mencari banyak transaksi yang dilakukan sales
+    sales
+where
+    sales_transaksi.kode_sales = sales.kode_sales;
+
+
+-- view menampilkan transaksi kredit yang dilakukan sales
+create or replace view v_sales_kredit as
+select
+    sales.nama_sales, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit
+from
+    sales,
+    transaksi,
+    kredit
+where
+    sales.kode_sales = transaksi.kode_sales
+and
+    transaksi.kode_transaksi = kredit.kode_transaksi;
+    
+
+-- view menampilkan banyak transaksi cash yang dilakukan sales
+create or replace view v_sales_trans_cash_count as
+select
+    sales.nama_sales as nama_sales, banyak_transaksi_cash
+from
+    (
+    select
+        trx_cash.kode_sales as kode_sales, count(trx_cash.trx_kode_transaksi) as banyak_transaksi_cash
+    from
+        (
+        select
+            transaksi.kode_sales as kode_sales, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            cash, transaksi
+        where
+            cash.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_cash
+    group by
+        trx_cash.kode_sales
+    ) 
+    sales_transaksi,
+    sales
+where
+    sales_transaksi.kode_sales = sales.kode_sales;
+
+
+
+-- view menampilkan transaksi cash yang dilakukan setiap sales
+create or replace view v_sales_cash as
+select
+    sales.nama_sales, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
+from
+    sales,
+    transaksi,
+    cash
+where
+    sales.kode_sales = transaksi.kode_sales
+and
+    transaksi.kode_transaksi = cash.kode_transaksi;
+
+
+-- view menampilkan banyak transaksi bayar cicilan yang dilakukan setiap sales
+create or replace view v_sales_trans_cicilan_count as
+select
+    sales.nama_sales as nama_sales, banyak_transaksi_cicilan
+from
+    (
+    select
+        trx_cicilan.kode_sales as kode_sales, count(trx_cicilan.trx_kode_transaksi) as banyak_transaksi_cicilan
+    from
+        (
+        select
+            transaksi.kode_sales as kode_sales, transaksi.kode_transaksi as trx_kode_transaksi
+        from
+            cicilan, transaksi
+        where
+            cicilan.kode_transaksi = transaksi.kode_transaksi
+        ) 
+        trx_cicilan
+    group by
+        trx_cicilan.kode_sales
+    ) 
+    sales_transaksi,
+    sales
+where
+    sales_transaksi.kode_sales = sales.kode_sales;
+
+
+-- end sales
+
+
+    
+
+
+select * from v_trans_perhari;
+
+select * from v_trans_perhari_minggu;
+
+select * from v_trans_perbulan;
+
+select * from v_sales_trans_count;
+
+select * from v_customer_trans_count;
+
+select * from v_customer_trans_kredit_count;
+
+select * from v_customer_kredit_lunas;
+
+select * from v_customer_kredit_belum_lunas;
+
+select * from v_customer_trans_cash_count;
+
+select * from v_customer_cash;
+
+select * from v_customer_trans_cicilan_count;
+
+
+
+select
+tahun, max(harga)
+from
+(
+select
+    to_char(tgl_transaksi, 'YYYY-MONTH') as tahun, sum(total_harga) as harga
+from
+    transaksi
+group by
+    to_char(tgl_transaksi, 'YYYY-MONTH')
+)
+group by tahun
+
+select
+    kode_transaksi, NIK, to_char(tgl_transaksi, 'YYYY-MM') as tahun_bulan, kode_sales, total_harga
+from 
+    transaksi
+
+
+
+/*
+create  or replace view sales_merek_cash as
+select sales.nama_sales, merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
+from
+sales, transaksi,cash, mobil, merek
+where
+sales.kode_sales = transaksi.kode_sales
+and
+transaksi.kode_transaksi = cash.kode_transaksi
+and
+cash.kode_mobil = mobil.kode_mobil
+and
+mobil.kode_merek = merek.kode_merek;
+
+create  or replace view sales_merek_kredit as
+select sales.nama_sales, merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
+from
+sales, transaksi,kredit, mobil, merek
+where
+sales.kode_sales = transaksi.kode_sales
+and
+transaksi.kode_transaksi = kredit.kode_transaksi
+and
+kredit.kode_mobil = mobil.kode_mobil
+and
+mobil.kode_merek = merek.kode_merek;
+
+
+create  or replace view t1 as
+select sales.nama_sales, merek.nama_merek
+from
+sales, transaksi,kredit, mobil, merek
+where
+sales.kode_sales = transaksi.kode_sales
+and
+transaksi.kode_transaksi = kredit.kode_transaksi
+and
+kredit.kode_mobil = mobil.kode_mobil
+and
+mobil.kode_merek = merek.kode_merek;
+
+
+create  or replace view t2 as
+select sales.nama_sales , to_char(transaksi.tgl_transaksi,'DAY') as tanggal
+from
+sales, transaksi,kredit, mobil, merek
+where
+sales.kode_sales = transaksi.kode_sales
+and
+transaksi.kode_transaksi = kredit.kode_transaksi
+and
+kredit.kode_mobil = mobil.kode_mobil
+and
+mobil.kode_merek = merek.kode_merek;
+
+create  or replace view t3 as
+select merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
+from
+sales, transaksi,kredit, mobil, merek
+where
+sales.kode_sales = transaksi.kode_sales
+and
+transaksi.kode_transaksi = kredit.kode_transaksi
+and
+kredit.kode_mobil = mobil.kode_mobil
+and
+mobil.kode_merek = merek.kode_merek;
+
+
+select * from sales_merek_cash;
+select * from sales_merek_kredit;
+select * from t1;
+select * from t2;
+select * from t3;
+
+select distinct
+T3.NAMA_MEREK, t1.NAMA_SALES, T2.TANGGAL
+from
+t1, t2, t3
+where
+T1.NAMA_SALES = T2.NAMA_SALES
+and 
+t1.nama_merek = t3.NAMA_MEREK
+and
+t3.TANGGAL = t2.TANGGAL;
+
+*/
+
+
+/* 
+*  =========== End of View ===========
+*/
