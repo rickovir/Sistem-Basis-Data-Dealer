@@ -193,7 +193,6 @@ SELECT s_sales.nextVal FROM DUAL;
 
 -- membuat sequence s_sales untuk sales
 create sequence s_sales start with 1100;
-
 -- membuat sequence s_transaksi untuk transaksi
 create sequence s_transaksi start with 100000;
 
@@ -254,261 +253,6 @@ begin
         transaksi.kode_transaksi = c_kode_transaksi;
 end;    
 
-/*
--- belum jelas
-create or replace procedure in_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
-is
-    NIK char(20);
-    hari char(20);
-    tgl_transaksi date;
-begin
-    select
-        transaksi.NIK, transaksi.tgl_transaksi into NIK, tgl_transaksi
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    select 
-        to_char(to_date(tgl_transaksi,'dd/mm/yyyy'), 'Day') into hari
-    from
-        dual;
-        
-    insert into
-    cust_hari_peluang
-    values
-    (
-        NIK,
-        hari
-    );
-       
-    insert into
-    cust_mobil_peluang
-    values
-    (
-        NIK,
-        c_kode_mobil
-    );
-    
-end;
-
-
--- belum jelas
-create or replace procedure up_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
-is
-    NIK char(20);
-begin
-    select
-        transaksi.NIK into NIK
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    update
-        cust_mobil_peluang
-    set 
-        cust_mobil_peluang.kode_mobil = c_kode_mobil
-    where
-        cust_mobil_peluang.NIK = NIK;    
-end;
-
-
--- belum jelas
-create or replace procedure dl_peluang_cust(c_kode_transaksi char, c_kode_mobil char)
-is
-    NIK char(20);
-    hari char(20);
-    tgl_transaksi date;
-begin
-    select
-        transaksi.NIK, transaksi.tgl_transaksi into NIK, tgl_transaksi
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    select 
-        to_char(to_date(tgl_transaksi,'dd/mm/yyyy'), 'Day') into hari
-    from
-        dual;
-        
-    delete
-    from
-        cust_hari_peluang
-    where
-        cust_hari_peluang.NIK = NIK
-    and
-        cust_hari_peluang.hari = hari;    
-        
-    delete
-    from
-        cust_mobil_peluang
-    where
-        cust_mobil_peluang.NIK = NIK
-    and
-        cust_mobil_peluang.kode_mobil = c_kode_mobil;   
-end;
-
-
-
--- belum jelas
-create or replace procedure in_bonus_sales(c_kode_transaksi char, c_kode_mobil char)
-is
-    kode_sales char(5);
-    kode_merek varchar2(10);
-begin
-    select
-        transaksi.kode_sales into kode_sales
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    select
-        mobil.kode_merek into kode_merek
-    from
-        mobil
-    where
-        mobil.kode_mobil = c_kode_mobil;
-        
-    insert into
-    sales_merek_bonus
-    values
-    (
-        kode_sales,
-        kode_merek
-    );
-    
-    insert into
-    sales_mobil_bonus
-    values
-    (
-        kode_sales,
-        c_kode_mobil
-    );
-    
-    insert into
-    merek_mobil_bonus
-    values
-    (
-        kode_merek,
-        c_kode_mobil
-    );
-end;
-
-
--- belum jelas
-create or replace procedure up_bonus_sales(c_kode_transaksi char, c_kode_mobil char, old_kode_mobil char)
-is
-    kode_sales char(5);
-    kode_merek char(10);
-    old_kode_merek char(10);
-begin
-    select
-        transaksi.kode_sales into kode_sales
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    select
-        mobil.kode_merek into kode_merek
-    from
-        mobil
-    where
-        mobil.kode_mobil = c_kode_mobil;
-    
-    select
-        mobil.kode_merek into old_kode_merek
-    from
-        mobil
-    where
-        mobil.kode_mobil = old_kode_mobil;
-    
-    update
-        sales_merek_bonus
-    set 
-        sales_merek_bonus.kode_merek = kode_merek
-    where
-        sales_merek_bonus.kode_sales = kode_sales;    
-        
-    update
-        sales_mobil_bonus
-    set 
-        sales_mobil_bonus.kode_mobil = kode_mobil
-    where
-        sales_mobil_bonus.kode_sales = kode_sales
-    ;  
-    
-    delete
-    from
-        merek_mobil_bonus
-    where
-        merek_MOBIL_BONUS.KODE_MOBIL = old_kode_mobil
-    and
-        merek_MOBIL_BONUS.KODE_MEREK = old_kode_merek
-    ;
-    
-    insert into
-    merek_mobil_bonus
-    values
-    (
-        kode_merek,
-        c_kode_mobil
-    );
-end;
-
-
--- belum jelas
-create or replace procedure dl_bonus_sales(c_kode_transaksi char, c_kode_mobil char)
-is
-    kode_sales char(5);
-    kode_merek char(10);
-begin
-    select
-        transaksi.kode_sales into kode_sales
-    from
-        transaksi
-    where
-        transaksi.kode_transaksi = c_kode_transaksi;
-    
-    select
-        mobil.kode_merek into kode_merek
-    from
-        mobil
-    where
-        mobil.kode_mobil = c_kode_mobil;
-    
-    delete
-    from
-        sales_merek_bonus
-    where
-        sales_merek_BONUS.KODE_sales = kode_sales
-    and
-        sales_merek_BONUS.KODE_MEREK = kode_merek
-    ;
-    
-    delete
-    from
-        sales_mobil_bonus
-    where
-        sales_MOBIL_BONUS.KODE_sales = kode_sales
-    and
-        sales_MOBIL_BONUS.KODE_mobil = c_kode_mobil
-    ;
-    
-    delete
-    from
-        merek_mobil_bonus
-    where
-        merek_MOBIL_BONUS.KODE_MOBIL = c_kode_mobil
-    and
-        merek_MOBIL_BONUS.KODE_MEREK = kode_merek
-    ;
-end;
-*/
-
 /* 
 *  membuat prosedur hitung_transaksi untuk menghitung dan menjumlahkan seluruh harga 
 *  yang menggunakan kode_transaksi tertentu
@@ -523,11 +267,6 @@ begin
     -- menambahkan total ke dalam total_harga ditable transaksi
     count_total_transaksi(kode_transaksi, total);
 end;
-
-update transaksi set total_harga = 0 where kode_transaksi = 'TRX100000';
-exec hitung_transaksi('TRX100006');
-exec hitung_transaksi('TRX100007');
-select * from transaksi
 
 
 /* 
@@ -1206,7 +945,6 @@ begin
     raise_application_error(-20002,'Mohon Maaf Record table mobil tidak dapat dihapus');
 end;
 
-
 /*
 *  membuat trigger cegah_delete_kredit before delete untuk mencegah delete kredit
 */
@@ -1263,55 +1001,6 @@ end;
 /* 
 *  =========== #5 Database Manipulation Language(DML) start here ===========
 */
-
-select CURRENT_TIME from dual;
-
-delete from sales;
-delete from cicilan;
-delete from kredit;
-delete from cash;
-delete from transaksi;
-
-delete from paket_kredit;
-
-select * from cicilan;
-select * from kredit;
-select * from cust_mobil_peluang;
-select * from sales_mobil_bonus;
-select * from merek_mobil_bonus;
-select * from sales_merek_bonus;
-select * from cust_hari_peluang;
-select * from cash;
-select * from transaksi;
-select * from paket_kredit;
-select * from mobil;
-select * from merek;
-select * from tipe;
-select * from sales;
-select * from customer;
-
-
-select * from sales;
-exec count_total_transaksi('TRX100012',total_cicilan_pertransaksi('TRX100012'));
-exec count_total_transaksi('TRX100012',total_kredit_pertransaksi('TRX100012'));
-exec count_total_transaksi('TRX100012',total_cash_pertransaksi('TRX100012'));
-exec count_total_transaksi('TRX100013',total_cicilan_pertransaksi('TRX100013'));
-exec DBMS_OUTPUT.PUT_LINE(find_angsuran('BKR10003'));
-exec DBMS_OUTPUT.PUT_LINE(total_cicilan_pertransaksi('TRX100026'));
-exec DBMS_OUTPUT.PUT_LINE(total_kredit_pertransaksi('TRX100014'));
-
-exec find_angsuran('BKR10001');
-/*SELECT A DAY 
-select to_char(to_date(SYSDAT,'dd/mm/yyyy'), 'Day') FROM dual
-
-*/
-/*RANDOM SELECT 
-select * from (
-select NIK from customer where kode_sales = '10003' order by dbms_random.value)
-where rownum = 1
-*/
-
-/*============== DML START HERE=============== */
 
 /* insert sales */
 insert into 
@@ -1489,6 +1178,51 @@ values
 'dina rafikah',
 'jalan quwito no 4',
 '082214399999'
+);
+
+
+insert into 
+customer
+(NIK,
+nama_customer,
+alamat_customer,
+telepon_customer)
+values
+(
+'7247923479266633',
+'cahyo moryo',
+'jalan koto no 4',
+'082214399999'
+);
+
+
+insert into 
+customer
+(NIK,
+nama_customer,
+alamat_customer,
+telepon_customer)
+values
+(
+'99999922222222',
+'hamdani',
+'jalan ditao no 4',
+'082214399929'
+);
+
+
+insert into 
+customer
+(NIK,
+nama_customer,
+alamat_customer,
+telepon_customer)
+values
+(
+'1122400999000',
+'wilson',
+'jalan morson',
+'0822143999766'
 );
 
 /* insert tipe */
@@ -1837,6 +1571,269 @@ s_mobil.nextVal,
 'MRK10004'
 );
 
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Camry 2.5 v',
+'Putih',
+'521420190',
+'masa depan yang lebih cerah',
+'T10004',
+'MRK10002'
+);
+
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Camry 3.5 v',
+'Putih',
+'551420190',
+'masa depan yang lebih cerah',
+'T10003',
+'MRK10002'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Camry 1 v',
+'merah',
+'501420190',
+'masa depan yang lebih cerah dan bersahabat',
+'T10001',
+'MRK10002'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'series 2 F45',
+'hitam',
+'435900000',
+'Mobil keluarga mewah',
+'T10002',
+'MRK10004'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'X1',
+'hitam',
+'455900000',
+'Mobil segala rintangan',
+'T10004',
+'MRK10003'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'M3',
+'merah',
+'732200000',
+'mobil luxury',
+'T10001',
+'MRK10000'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Q5',
+'putih',
+'623500000',
+'mobil mewah berteknologi',
+'T10004',
+'MRK10004'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'S5',
+'merah',
+'853500000',
+'mobil kompak eksekutif',
+'T10003',
+'MRK10003'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Dutro 110 HD',
+'hijau',
+'453500000',
+'truck lincah dan bertenaga',
+'T10002',
+'MRK10002'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'FRR190PS',
+'putih',
+'745400000',
+'volume besar hemat solar',
+'T10002',
+'MRK10001'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Sirion',
+'biru',
+'455900000',
+'City car lincah bertenaga',
+'T10002',
+'MRK10000'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Trajet',
+'putih',
+'558500000',
+'mobil di segala cuaca',
+'T10004',
+'MRK10002'
+);
+
+insert into mobil
+(
+kode_mobil,
+nama_mobil,
+warna,
+harga_mobil,
+deskripsi,
+kode_tipe,
+kode_merek
+)
+values(
+s_mobil.nextVal,
+'Equinox',
+'hitam',
+'758500000',
+'mobil bertenaga besar',
+'T10002',
+'MRK10003'
+);
+
+
 /* insert transaksi */
 insert into transaksi
 (
@@ -1853,7 +1850,6 @@ to_date('12/05/2015','dd/mm/yyyy'),
 'tunai',
 'S1100'
 );
-
 
 insert into transaksi
 (
@@ -2354,8 +2350,606 @@ to_date('10/11/2016','dd/mm/yyyy'),
 'tunai',
 'S1104'
 );
+-- disini 2
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'1122400999000       ',
+to_date('28/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
 
 
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'7247923479266633    ',
+to_date('10/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1102'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('12/04/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'11122233344455      ',
+to_date('10/03/2016','dd/mm/yyyy'),
+'tunai',
+'S1100'
+);
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'9493481115834848    ',
+to_date('11/01/2015','dd/mm/yyyy'),
+'tunai',
+'S1102'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'11122233344455      ',
+to_date('09/09/2016','dd/mm/yyyy'),
+'tunai',
+'S1101'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('10/07/2016','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'9493481115834848    ',
+to_date('25/12/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'54564644454212      ',
+to_date('28/10/2016','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'11122233344455      ',
+to_date('11/08/2016','dd/mm/yyyy'),
+'tunai',
+'S1100'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'9375338474827       ',
+to_date('12/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'7247923479266633    ',
+to_date('10/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1100'
+);
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'2015318923823       ',
+to_date('09/05/2016','dd/mm/yyyy'),
+'tunai',
+'S1101'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'11122233344455      ',
+to_date('11/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1102'
+);
+
+
+
+
+insert into transaksi
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'9095123928381       ',
+to_date('12/04/2016','dd/mm/yyyy'),
+'tunai',
+'S1101'
+);
+
+
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('10/11/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('10/12/2016','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/01/2017','dd/mm/yyyy'),
+'tunai',
+'S1102'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('09/02/2017','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('10/03/2017','dd/mm/yyyy'),
+'tunai',
+'S1101'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('05/04/2017','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/05/2017','dd/mm/yyyy'),
+'tunai',
+'S1103'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('09/06/2017','dd/mm/yyyy'),
+'tunai',
+'S1101'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('10/07/2017','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/08/2017','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+-- disini
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/04/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/03/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/02/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/01/2016','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/12/2015','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/11/2015','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/10/2015','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/09/2015','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+insert into transaksi --
+(
+kode_transaksi,
+NIK,
+tgl_transaksi,
+jenis_transaksi,
+kode_sales
+)
+values(
+s_transaksi.nextVal,
+'99999922222222      ',
+to_date('08/08/2015','dd/mm/yyyy'),
+'tunai',
+'S1104'
+);
+
+-- end disini 2
 /* insert kredit */
 insert into kredit
 (
@@ -2367,7 +2961,7 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100001',
-'HON10000',
+'MIT10000',
 'PKT10003'
 );
 /*
@@ -2384,7 +2978,7 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100001',
-'TOY10001',
+'MIT10001',
 'PKT10001'
 );
 
@@ -2399,7 +2993,7 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100002',
-'MIT10003',
+'TOY10003',
 'PKT10002'
 );
 
@@ -2414,7 +3008,7 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100004',
-'FOR10002',
+'HON10002',
 'PKT10001'
 );
 
@@ -2429,9 +3023,204 @@ kode_paket
 values(
 s_kredit.nextVal,
 'TRX100004',
-'TOY10001',
+'MIT10001',
 'PKT10000'
 );
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100043',
+'MIT10000',
+'PKT10003'
+);
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100025',
+'MIT10000',
+'PKT10003'
+);
+/*
+exec in_bonus_sales('TRX100001','MIT10000');
+exec in_peluang_cust('TRX100001','MIT10000');
+*/
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100024',
+'MIT10001',
+'PKT10001'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100023',
+'TOY10003',
+'PKT10002'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100022',
+'HON10002',
+'PKT10001'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100021',
+'MIT10001',
+'PKT10000'
+);
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100020',
+'MIT10000',
+'PKT10003'
+);
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100025',
+'MIT10000',
+'PKT10003'
+);
+/*
+exec in_bonus_sales('TRX100001','MIT10000');
+exec in_peluang_cust('TRX100001','MIT10000');
+*/
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100060',
+'MIT10001',
+'PKT10001'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100059',
+'TOY10003',
+'PKT10002'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100058',
+'HON10002',
+'PKT10001'
+);
+
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100057',
+'MIT10001',
+'PKT10000'
+);
+
+insert into kredit
+(
+kode_kredit,
+kode_transaksi,
+kode_mobil,
+kode_paket
+)
+values(
+s_kredit.nextVal,
+'TRX100056',
+'MIT10000',
+'PKT10003'
+);
+
+
 -- # insert data sampai sini #
 
 /* insert cicilan */
@@ -2522,6 +3311,200 @@ s_cicilan.nextVal,
 'BKR10001'
 );
 
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100044',
+'BKR10005'
+);
+-- disini 3
+
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100051',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100054',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100053',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100048',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100047',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100055',
+'BKR10005'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100045',
+'BKR10005'
+);
+-- disini
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100065',
+'BKR10003'
+);
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100064',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100063',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100062',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100061',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100066',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100055',
+'BKR10003'
+);
+
+insert into cicilan
+(
+kode_cicilan,
+kode_transaksi,
+kode_kredit
+)
+values(
+s_cicilan.nextVal,
+'TRX100045',
+'BKR10003'
+);
 /* insert cash */
 insert into cash
 (
@@ -2533,7 +3516,7 @@ values
 (
 s_cash.nextVal,
 'TRX100001',
-'HON10000'
+'MIT10000'
 );
 
 
@@ -2547,7 +3530,7 @@ values
 (
 s_cash.nextVal,
 'TRX100006',
-'TOY10001'
+'MIT10001'
 );
 
 
@@ -2561,7 +3544,7 @@ values
 (
 s_cash.nextVal,
 'TRX100003',
-'FOR10002'
+'HON10002'
 );
 
 
@@ -2575,7 +3558,7 @@ values
 (
 s_cash.nextVal,
 'TRX100018',
-'FOR10002'
+'HON10002'
 );
 
 
@@ -2589,7 +3572,7 @@ values
 (
 s_cash.nextVal,
 'TRX100019',
-'SUZ10004'
+'SUZ10006'
 );
 
 
@@ -2603,7 +3586,7 @@ values
 (
 s_cash.nextVal,
 'TRX100010',
-'TOY10001'
+'MIT10001'
 );
 
 
@@ -2617,7 +3600,7 @@ values
 (
 s_cash.nextVal,
 'TRX100009',
-'FOR10002'
+'HON10002'
 );
 
 
@@ -2631,10 +3614,330 @@ values
 (
 s_cash.nextVal,
 'TRX100011',
-'MIT10003'
+'TOY10003'
+);
+-- disini
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100035',
+'MIT10000'
 );
 
 
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100034',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100033',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100032',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100031',
+'SUZ10006'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100030',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100029',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100028',
+'TOY10003'
+);
+-- disini
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100043',
+'MIT10000'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100042',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100041',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100040',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100039',
+'SUZ10006'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100038',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100037',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100036',
+'TOY10003'
+);
+
+-- disini
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100043',
+'MIT10000'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100017',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100016',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100015',
+'HON10002'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100014',
+'SUZ10006'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100013',
+'MIT10001'
+);
+
+
+insert into cash
+(
+kode_cash,
+kode_transaksi,
+kode_mobil
+)
+values
+(
+s_cash.nextVal,
+'TRX100012',
+'HON10002'
+);
+
+-- menjalankan prosedur untuk menghitung transaksi
 exec hitung_transaksi('TRX100000');
 exec hitung_transaksi('TRX100001');
 exec hitung_transaksi('TRX100002');
@@ -2663,6 +3966,47 @@ exec hitung_transaksi('TRX100024');
 exec hitung_transaksi('TRX100025');
 exec hitung_transaksi('TRX100026');
 exec hitung_transaksi('TRX100027');
+--
+exec hitung_transaksi('TRX100028');
+exec hitung_transaksi('TRX100029');
+exec hitung_transaksi('TRX100030');
+exec hitung_transaksi('TRX100031');
+exec hitung_transaksi('TRX100032');
+exec hitung_transaksi('TRX100033');
+exec hitung_transaksi('TRX100034');
+exec hitung_transaksi('TRX100035');
+exec hitung_transaksi('TRX100036');
+exec hitung_transaksi('TRX100037');
+exec hitung_transaksi('TRX100038');
+exec hitung_transaksi('TRX100039');
+exec hitung_transaksi('TRX100040');
+exec hitung_transaksi('TRX100041');
+exec hitung_transaksi('TRX100042');
+exec hitung_transaksi('TRX100043');
+exec hitung_transaksi('TRX100044');
+exec hitung_transaksi('TRX100045');
+exec hitung_transaksi('TRX100046');
+exec hitung_transaksi('TRX100047');
+exec hitung_transaksi('TRX100048');
+exec hitung_transaksi('TRX100049');
+exec hitung_transaksi('TRX100050');
+exec hitung_transaksi('TRX100051');
+exec hitung_transaksi('TRX100052');
+exec hitung_transaksi('TRX100053');
+exec hitung_transaksi('TRX100054');
+exec hitung_transaksi('TRX100055');
+exec hitung_transaksi('TRX100056');
+exec hitung_transaksi('TRX100057');
+exec hitung_transaksi('TRX100058');
+exec hitung_transaksi('TRX100059');
+exec hitung_transaksi('TRX100060');
+exec hitung_transaksi('TRX100061');
+exec hitung_transaksi('TRX100062');
+exec hitung_transaksi('TRX100063');
+exec hitung_transaksi('TRX100064');
+exec hitung_transaksi('TRX100065');
+exec hitung_transaksi('TRX100066');
+
 select * from transaksi;
 
 /* 
@@ -2674,17 +4018,28 @@ select * from transaksi;
 /* 
 *  =========== #6 View start here ===========
 */
--- !!!!!!!!!!!!!!!!!!!!!!!1 VIEW BELUM BUAT !!!!!!!!!!!!!!!!!!!!
+
+-- view masing -masing table
 create or replace view v_cicilan as select * from cicilan;
+
 create or replace view v_kredit as select * from kredit;
+
 create or replace view v_cash as select * from cash;
+
 create or replace view v_transaksi as select * from transaksi;
+
 create or replace view v_paket_kredit as select * from paket_kredit;
+
 create or replace view v_mobil as select * from mobil;
+
 create or replace view v_merek as select * from merek;
+
 create or replace view v_tipe as select * from tipe;
+
 create or replace view v_sales as select * from sales;
+
 create or replace view v_customer as select * from customer;
+
 
 -- operasi tanggal transaksi
 
@@ -2776,7 +4131,7 @@ where
 -- view menampilkan transaksi kredit yang belum lunas yang dilakukan setiap customer
 create or replace view v_customer_kredit_belum_lunas as
 select
-    customer.nama_customer, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
+    customer.nama_customer, transaksi.kode_transaksi, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
 from
     customer,
     transaksi,
@@ -2792,7 +4147,7 @@ and
 -- view menampilkan transaksi kredit yang sudah lunas yang dilakukan setiap customer
 create or replace view v_customer_kredit_lunas as
 select
-    customer.nama_customer, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
+    customer.nama_customer, transaksi.kode_transaksi, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit, kredit.SISA_KREDIT
 from
     customer,
     transaksi,
@@ -2805,6 +4160,29 @@ and
     kredit.status_kredit = 'lunas';
 
 
+-- view menampilkan mobil yang dibeli kredit yang oleh customer
+create or replace view v_customer_mobil_kredit as
+select
+    customer.nama_customer,kredit.kode_kredit, kredit.tanggal_kredit, mobil.nama_mobil, merek.nama_merek, tipe.nama_tipe
+from
+    customer,
+    transaksi,
+    kredit,
+    mobil,
+    merek,
+    tipe
+where
+    customer.NIK = transaksi.NIK
+and
+    transaksi.kode_transaksi = kredit.kode_transaksi
+and 
+    kredit.kode_mobil = mobil.kode_mobil
+and 
+    mobil.kode_merek = merek.kode_merek
+and 
+    mobil.kode_tipe = tipe.kode_tipe;
+    
+    
 
 -- view menampilkan banyak transaksi cash yang dilakukan setiap customer
 create or replace view v_customer_trans_cash_count as
@@ -2837,7 +4215,7 @@ where
 -- view menampilkan transaksi cash yang dilakukan setiap customer
 create or replace view v_customer_cash as
 select
-    customer.nama_customer, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
+    customer.nama_customer, transaksi.kode_transaksi, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
 from
     customer,
     transaksi,
@@ -2846,6 +4224,29 @@ where
     customer.NIK = transaksi.NIK
 and
     transaksi.kode_transaksi = cash.kode_transaksi;
+    
+
+-- view menampilkan mobil yang dibeli cash yang oleh customer
+create or replace view v_customer_mobil_cash as
+select
+    customer.nama_customer,cash.kode_cash, cash.tanggal_cash, mobil.nama_mobil, merek.nama_merek, tipe.nama_tipe
+from
+    customer,
+    transaksi,
+    cash,
+    mobil,
+    merek,
+    tipe
+where
+    customer.NIK = transaksi.NIK
+and
+    transaksi.kode_transaksi = cash.kode_transaksi
+and 
+    cash.kode_mobil = mobil.kode_mobil
+and 
+    mobil.kode_merek = merek.kode_merek
+and 
+    mobil.kode_tipe = tipe.kode_tipe;
     
 
 -- view menampilkan banyak transaksi bayar cicilan yang dilakukan setiap customer
@@ -2873,10 +4274,10 @@ from
     customer
 where
     customer_transaksi.NIK = customer.NIK;
-    
+
+
 -- end operasi view customer
 
--- cicilan blum
 
 --  operasi view sales
 
@@ -2926,7 +4327,7 @@ where
 -- view menampilkan transaksi kredit yang dilakukan sales
 create or replace view v_sales_kredit as
 select
-    sales.nama_sales, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit
+    sales.nama_sales, transaksi.kode_transaksi, kredit.kode_kredit, kredit.TANGGAL_KREDIT as tanggal_kredit
 from
     sales,
     transaksi,
@@ -2968,7 +4369,7 @@ where
 -- view menampilkan transaksi cash yang dilakukan setiap sales
 create or replace view v_sales_cash as
 select
-    sales.nama_sales, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
+    sales.nama_sales, transaksi.kode_transaksi, cash.kode_cash, cash.TANGGAL_cash as tanggal_cash
 from
     sales,
     transaksi,
@@ -3009,16 +4410,68 @@ where
 -- end sales
 
 
-    
+-- operasi mobil
 
+-- view menampilkan banyak mobil yang terjual secara cash
+create or replace view v_mobil_cash_count as
+select
+    mobil.nama_mobil as nama_mobil, banyak_terjual_cash
+from
+    (
+    select
+        c_mobil.kode_mobil as kode_mobil, count(c_mobil.kode_mobil) as banyak_terjual_cash
+    from
+        (
+        select
+            mobil.kode_mobil as kode_mobil
+        from
+            cash,
+            mobil
+        where
+            cash.kode_mobil = mobil.kode_mobil
+        ) c_mobil
+    group by
+        c_mobil.kode_mobil
+    ) gr_mobil,
+    mobil
+where
+    gr_mobil.kode_mobil = mobil.kode_mobil;
+    
+    
+-- view menampilkan banyak mobil yang terjual secara kredit
+create or replace view v_mobil_kredit_count as
+select
+    mobil.nama_mobil as nama_mobil, banyak_terjual_kredit
+from
+    (
+    select
+        c_mobil.kode_mobil as kode_mobil, count(c_mobil.kode_mobil) as banyak_terjual_kredit
+    from
+        (
+        select
+            mobil.kode_mobil as kode_mobil
+        from
+            kredit,
+            mobil
+        where
+            kredit.kode_mobil = mobil.kode_mobil
+        ) c_mobil
+    group by
+        c_mobil.kode_mobil
+    ) gr_mobil,
+    mobil
+where
+    gr_mobil.kode_mobil = mobil.kode_mobil;
+
+-- end of operasi view mobil
+    
+-- menjalankan view
 
 select * from v_trans_perhari;
 
 select * from v_trans_perhari_minggu;
 
 select * from v_trans_perbulan;
-
-select * from v_sales_trans_count;
 
 select * from v_customer_trans_count;
 
@@ -3028,122 +4481,51 @@ select * from v_customer_kredit_lunas;
 
 select * from v_customer_kredit_belum_lunas;
 
+select * from v_customer_mobil_kredit;
+
 select * from v_customer_trans_cash_count;
 
 select * from v_customer_cash;
 
+select * from v_customer_mobil_cash;
+
 select * from v_customer_trans_cicilan_count;
 
+select * from v_sales_trans_count;
 
+select * from v_sales_trans_kredit_count;
 
-select
-tahun, max(harga)
-from
-(
-select
-    to_char(tgl_transaksi, 'YYYY-MONTH') as tahun, sum(total_harga) as harga
-from
-    transaksi
-group by
-    to_char(tgl_transaksi, 'YYYY-MONTH')
-)
-group by tahun
+select * from v_sales_kredit;
 
-select
-    kode_transaksi, NIK, to_char(tgl_transaksi, 'YYYY-MM') as tahun_bulan, kode_sales, total_harga
-from 
-    transaksi
+select * from v_sales_trans_cash_count;
 
+select * from v_sales_cash;
 
+select * from v_sales_trans_cicilan_count;
 
-/*
-create  or replace view sales_merek_cash as
-select sales.nama_sales, merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
-from
-sales, transaksi,cash, mobil, merek
-where
-sales.kode_sales = transaksi.kode_sales
-and
-transaksi.kode_transaksi = cash.kode_transaksi
-and
-cash.kode_mobil = mobil.kode_mobil
-and
-mobil.kode_merek = merek.kode_merek;
+select * from v_mobil_cash_count;
 
-create  or replace view sales_merek_kredit as
-select sales.nama_sales, merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
-from
-sales, transaksi,kredit, mobil, merek
-where
-sales.kode_sales = transaksi.kode_sales
-and
-transaksi.kode_transaksi = kredit.kode_transaksi
-and
-kredit.kode_mobil = mobil.kode_mobil
-and
-mobil.kode_merek = merek.kode_merek;
+select * from v_mobil_kredit_count;
 
+select * from v_cicilan;
 
-create  or replace view t1 as
-select sales.nama_sales, merek.nama_merek
-from
-sales, transaksi,kredit, mobil, merek
-where
-sales.kode_sales = transaksi.kode_sales
-and
-transaksi.kode_transaksi = kredit.kode_transaksi
-and
-kredit.kode_mobil = mobil.kode_mobil
-and
-mobil.kode_merek = merek.kode_merek;
+select * from v_kredit;
 
+select * from v_cash;
 
-create  or replace view t2 as
-select sales.nama_sales , to_char(transaksi.tgl_transaksi,'DAY') as tanggal
-from
-sales, transaksi,kredit, mobil, merek
-where
-sales.kode_sales = transaksi.kode_sales
-and
-transaksi.kode_transaksi = kredit.kode_transaksi
-and
-kredit.kode_mobil = mobil.kode_mobil
-and
-mobil.kode_merek = merek.kode_merek;
+select * from v_transaksi;
 
-create  or replace view t3 as
-select merek.nama_merek, to_char(transaksi.tgl_transaksi,'DAY') as tanggal
-from
-sales, transaksi,kredit, mobil, merek
-where
-sales.kode_sales = transaksi.kode_sales
-and
-transaksi.kode_transaksi = kredit.kode_transaksi
-and
-kredit.kode_mobil = mobil.kode_mobil
-and
-mobil.kode_merek = merek.kode_merek;
+select * from v_paket_kredit;
 
+select * from v_mobil;
 
-select * from sales_merek_cash;
-select * from sales_merek_kredit;
-select * from t1;
-select * from t2;
-select * from t3;
+select * from v_merek;
 
-select distinct
-T3.NAMA_MEREK, t1.NAMA_SALES, T2.TANGGAL
-from
-t1, t2, t3
-where
-T1.NAMA_SALES = T2.NAMA_SALES
-and 
-t1.nama_merek = t3.NAMA_MEREK
-and
-t3.TANGGAL = t2.TANGGAL;
+select * from v_tipe;
 
-*/
+select * from v_sales;
 
+select * from v_customer;
 
 /* 
 *  =========== End of View ===========
